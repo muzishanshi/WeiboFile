@@ -1,4 +1,4 @@
-### Typecho-Weiboimg
+### Typecho-WeiboFile新浪微博图片上传插件
 ---
 
 将 Typecho 的附件上传至新浪微博云存储中，无需申请appid，不占用服务器大小，可永久保存，只需一个不会登录的微博小号即可。
@@ -10,12 +10,12 @@
 第四步：完成。
 
 #### 使用注意：
-1、此插件V1.0.0版本使用php5.6编写，php7.0会报Sinaupload.php中的语法错误，建议使用php5.6，因为7.0实在太高了=_=!
-2、如果从github下载的话，需要把插件目录改为WeiboFile即可。
+此插件V1.0.1版本使用php5.6编写，php7.0“可能”会报Sinaupload.php中的语法错误，建议使用php5.6，因为7.0实在太高了=_=!
 
 #### 与我联系：
 作者：二呆
 网站：http://www.tongleer.com/
+Github：https://github.com/muzishanshi/WeiboFile
 
 #### 参考资料：
 幻想领域：https://www.52ecy.cn/

@@ -3,9 +3,9 @@
  * 将 Typecho 的附件上传至新浪微博云存储中，无需申请appid，不占用服务器大小，可永久保存，只需一个不会登录的微博小号即可。
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.0
+ * @version 1.0.1
  * @link http://www.tongleer.com/
- * @date 2018-5-2
+ * @date 2018-07-02
  */
 require __DIR__ . '/Sinaupload.php';
 
@@ -32,10 +32,10 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface
     // 插件配置面板
     public static function config(Typecho_Widget_Helper_Form $form)
     {
-        $weibouser = new Typecho_Widget_Helper_Form_Element_Text('weibouser', null, '', _t('微博小号用户名：'));
+        $weibouser = new Typecho_Widget_Helper_Form_Element_Text('weibouser', null, '', _t('微博小号用户名：'), _t('备注：设置后可多尝试多上传几次，上传成功尽量不要将此微博小号登录微博系的网站、软件，可以登录，但不确定会不会上传失败，上传失败了再重新上传2次同样可以正常上传，如果小号等级过低，可尝试微博大号，插件可正常使用，无需担心。'));
         $form->addInput($weibouser->addRule('required', _t('微博小号用户名不能为空！')));
 
-        $weibopass = new Typecho_Widget_Helper_Form_Element_Text('weibopass', null, '', _t('微博小号密码：'));
+        $weibopass = new Typecho_Widget_Helper_Form_Element_Password('weibopass', null, '', _t('微博小号密码：'));
         $form->addInput($weibopass->addRule('required', _t('微博小号密码不能为空！')));
     }
 
@@ -120,6 +120,6 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface
     public static function attachmentHandle(array $content)
     {
         $option = self::getConfig();
-        return Typecho_Common::url($content['attachment']->path, 'https://ws3.sinaimg.cn/large/');
+        return Typecho_Common::url($content['attachment']->path.'.jpg', 'https://ws3.sinaimg.cn/large/');
     }
 }

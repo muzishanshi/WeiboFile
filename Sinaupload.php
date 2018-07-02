@@ -15,8 +15,7 @@ class Sinaupload{
     /**
      * 上传图床接口
      */
-    private $url = 'http://picupload.service.weibo.com/interface/pic_upload.php'
-        .'?mime=image%2Fjpeg&data=base64&url=0&markpos=1&logo=&nick=0&marks=1&app=miniblog';
+    private $url = 'http://picupload.service.weibo.com/interface/pic_upload.php?mime=image%2Fjpeg&data=base64&url=0&markpos=1&logo=&nick=0&marks=1&app=miniblog';
 
     public function __construct($cookie){
         $this->cookie = $cookie;
@@ -30,8 +29,8 @@ class Sinaupload{
      */
     public function upload($file, $multipart = true) {
         if($multipart) {
-            $this->url .= '&cb=http://weibo.com/aj/static/upimgback.html?_wv=5&callback=STK_ijax_'.time();
-            if (class_exists('CURLFile')) {     // php 5.5
+            $this->url.='&cb=http://weibo.com/aj/static/upimgback.html?_wv=5&callback=STK_ijax_'.time();
+            if (class_exists('CURLFile')) {// php 5.5
                 $post['pic1'] = new \CURLFile(realpath($file));
             } else {
                 $post['pic1'] = '@'.realpath($file);
@@ -69,17 +68,19 @@ class Sinaupload{
         $size = $sizeArr[$size];  
         // 传递 pid  
         if (preg_match('/^[a-zA-Z0-9]{32}$/', $pid) === 1) {  
-            return ($https ? 'https' : 'http') . '://' . ($https ? 'ws' : 'ww')  
-                . ((crc32($pid) & 3) + 1) . ".sinaimg.cn/" . $size  
-                . "/$pid." . ($pid[21] === 'g' ? 'gif' : 'jpg');  
+            return ($https?'https':'http').'://'.($https?'ws':'ww').((crc32($pid) & 3) + 1).".sinaimg.cn/".$size."/$pid.".($pid[21] ==='g'?'gif':'jpg');
         }  
         // 传递 url  
-        $url = $pid;  
-        $imgUrl = preg_replace_callback('/^(https?:\/\/[a-z]{2}\d\.sinaimg\.cn\/)'  
-            . '(large|bmiddle|mw1024|mw690|small|square|thumb180|thumbnail)'  
-            . '(\/[a-z0-9]{32}\.(jpg|gif))$/i', function ($match) use ($size) {  
+        $url = $pid;
+        $imgUrl = preg_replace_callback(
+			'/^(https?:\/\/[a-z]{2}\d\.sinaimg\.cn\/)(large|bmiddle|mw1024|mw690|small|square|thumb180|thumbnail)(\/[a-z0-9]{32}\.(jpg|gif))$/i',
+			function ($match) use ($size) {  
                 return $match[1] . $size . $match[3];  
-            }, $url, -1, $count);  
+            },
+			$url,
+			-1,
+			$count
+		);  
         if ($count === 0) {  
             return '';  
         }  
