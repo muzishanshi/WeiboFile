@@ -1,3 +1,5 @@
+<img src="https://ws3.sinaimg.cn/large/ecabade5ly1fqwuz2k658j20le05nt8i" alt="Typecho-WeiboFile新浪微博图片上传插件" />
+
 ### Typecho-WeiboFile新浪微博图片上传插件
 ---
 
@@ -20,3 +22,7 @@ Github：https://github.com/muzishanshi/WeiboFile
 #### 参考资料：
 幻想领域：https://www.52ecy.cn/
 七牛：https://www.qiniu.com/
+
+#### 更新记录：
+2018-07-02 增加了使用备注信息和上传后的图片增加后缀可成为一个完整的图片路径
+2018-05-02 第一版本实现
