@@ -19,14 +19,14 @@
 此插件V1.0.1版本使用php5.6编写，php7.0“可能”会报Sinaupload.php中的语法错误，建议使用php5.6，因为7.0实在太高了=_=!
 
 #### 与我联系：
-作者：二呆
-网站：http://www.tongleer.com/
+作者：二呆<br />
+网站：http://www.tongleer.com/<br />
 Github：https://github.com/muzishanshi/WeiboFile
 
 #### 参考资料：
-幻想领域：https://www.52ecy.cn/
+幻想领域：https://www.52ecy.cn/<br />
 七牛：https://www.qiniu.com/
 
 #### 更新记录：
-2018-07-02 增加了使用备注信息和上传后的图片增加后缀可成为一个完整的图片路径
+2018-07-02 增加了使用备注信息和上传后的图片增加后缀可成为一个完整的图片路径<br />
 2018-05-02 第一版本实现
