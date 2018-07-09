@@ -5,7 +5,7 @@ if($action=='uploadMovie'){
 	move_uploaded_file($_FILES['movieFile']['tmp_name'], $filename);
 	$ch = curl_init();
 	$filePath = dirname(__FILE__).'/'.$filename;
-	$data     = array('action' => $action, 'movieFile' => '@' . $filePath);
+	$data = array('action' => $action, 'movieFile' => '@' . $filePath);
 	if (class_exists('\CURLFile')) {
 		$data['movieFile'] = new \CURLFile(realpath($filePath));
 	} else {
@@ -19,7 +19,7 @@ if($action=='uploadMovie'){
 	curl_exec($ch);
 	unlink($filename);
 }else if($action=='parseMovie'){
-	require dirname(__FILE__).'/../include/urlParse.php';
+	require dirname(__FILE__).'/../include/UrlParse.php';
 	$video_url = isset($_POST['video_url']) ? addslashes($_POST['video_url']) : '';
 	$urlParse = new UrlParse();
 	$result = $urlParse->setUrl($video_url);
