@@ -7,15 +7,34 @@
 		
 	 	$(document).on('click', '#wmd-button-video', function(){
 	 		$(this).after(
-	 			'<div class="wmd-prompt-dialog"><div><p><b>本地视频</b></p><p><font color="red">请注意视频内容的合法性</font></div><form enctype="multipart/form-data"><input type="file" name="video_file" id="video_file"><br /><br /><button id="uploadBtn" type="button" class="btn-s primary" onclick="startUpload(this);">上传</button><button type="button" class="btn-s" onclick="cancelUpload();">取消</button><br /><br /><div id="video_upload_msg"></div></form></div>');
+	 			'<div class="wmd-prompt-dialog"><div><p><b>本地视频</b></p><p><font color="red">请注意视频内容的合法性</font></div><form enctype="multipart/form-data"><input type="file" name="video_file" id="video_file"><br /><br /><button id="uploadBtn" type="button" class="btn-s primary" onclick="startUpload(this);">上传并插入</button><button type="button" class="btn-s" onclick="cancelAlert();">取消</button><br /><br /><div id="video_upload_msg"></div></form><div><p><b>解析视频</b></p><p>目前支持秒拍、抖音视频</div><form><input type="text" name="video_url" id="video_url"><br /><br /><button id="parseBtn" type="button" class="btn-s primary" onclick="startParse(this);">解析并插入</button><button type="button" class="btn-s" onclick="cancelAlert();">取消</button><br /><br /><div id="video_parse_msg"></div></form></div>');
 
-	 	})
+	 	});
 
 	 	//移除弹窗
 	 	if(($('.wmd-prompt-dialog').length != 0) && e.keyCode == '27') {
-			cancelUpload();
+			cancelAlert();
 		}
-	})
+	});
+	
+	function startParse(e){
+		var Expression=/http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
+		var objExp=new RegExp(Expression);
+		if(objExp.test($('#video_url').val()) != true){
+			$('#video_parse_msg').html('<font color="red">输入合法的视频地址</font>');
+			return;
+		}
+		$.post("<?php echo $ajaxurl?>",{action:"parseMovie",video_url:$('#video_url').val()},function(data){
+			var data=JSON.parse(data);
+			if(data.error == undefined){
+				$('#video_parse_msg').html('<font color="green">解析成功</font>');
+				var html='\r\n<iframe height="400" width="100%" src="'+data.url+'" frameborder="0" "allowfullscreen"></iframe>';
+				$('#text').val($('#text').val()+html);
+			}else{
+				$('#video_parse_msg').html('<font color="red">输入的地址无法解析，请换个地址再试试吧</font>');
+			}
+		});
+	}
 
 	function startUpload(e){
 		if($('#video_upload_msg').html()=='<font color="green">上传中，请稍后……</font>'){
@@ -43,7 +62,7 @@
 				if(data.code==100){
 					$('#video_upload_msg').html('<font color="green">上传成功，可等视频审核通过后再将文章“公开度”设置为“公开”</font>');
 					$('#uploadBtn').css('display','none');
-					var html='\r\n<iframe height=400 width="100%" src="http://player.youku.com/embed/'+data.video_id+'" frameborder=0 "allowfullscreen"></iframe>';
+					var html='\r\n<iframe height="400" width="100%" src="http://player.youku.com/embed/'+data.video_id+'" frameborder="0" "allowfullscreen"></iframe>';
 					$('#text').val($('#text').val()+html);
 				}else{
 					$('#video_upload_msg').html('<font color="red">上传失败</font>');
@@ -57,7 +76,7 @@
 		xhr.send(upload);
 	}
 
-	function cancelUpload() {
+	function cancelAlert() {
 		$('.wmd-prompt-dialog').remove()
 	}
 </script>

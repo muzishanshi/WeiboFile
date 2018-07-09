@@ -3,9 +3,9 @@
  * 将 Typecho 的附件上传至新浪微博云存储中，无需申请appid，不占用服务器大小，可永久保存，只需一个不会登录的微博小号即可。
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.2
+ * @version 1.0.3
  * @link http://www.tongleer.com/
- * @date 2018-07-09
+ * @date 2018-07-10
  */
 require __DIR__ . '/include/Sinaupload.php';
 
@@ -37,7 +37,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
     // 插件配置面板
     public static function config(Typecho_Widget_Helper_Form $form){
 		//版本检查
-		$version=file_get_contents('http://api.tongleer.com/interface/WeiboFile.php?action=update&version=2');
+		$version=file_get_contents('http://api.tongleer.com/interface/WeiboFile.php?action=update&version=3');
 		$div=new Typecho_Widget_Helper_Layout();
 		$div->html('版本检查：'.$version);
 		$div->render();

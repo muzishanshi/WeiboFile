@@ -1,7 +1,4 @@
 <?php
-date_default_timezone_set('Asia/Shanghai');
-include '../../../../config.inc.php';
-
 $action = isset($_POST['action']) ? addslashes($_POST['action']) : '';
 if($action=='uploadMovie'){
 	$filename = iconv("utf-8", "gbk", $_FILES['movieFile']['name']);
@@ -21,5 +18,15 @@ if($action=='uploadMovie'){
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 	curl_exec($ch);
 	unlink($filename);
+}else if($action=='parseMovie'){
+	require dirname(__FILE__).'/../include/urlParse.php';
+	$video_url = isset($_POST['video_url']) ? addslashes($_POST['video_url']) : '';
+	$urlParse = new UrlParse();
+	$result = $urlParse->setUrl($video_url);
+	foreach ( $result as $key => $value ) {  
+		$result[$key] = urlencode ( $value );  
+	}  
+	$json=json_encode($result);
+	echo urldecode($json);
 }
 ?>
