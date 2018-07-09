@@ -1,9 +1,9 @@
 <img src="https://ws3.sinaimg.cn/large/ecabade5ly1fqwuz2k658j20le05nt8i" alt="Typecho-WeiboFile新浪微博图片上传插件" />
 
-### Typecho-WeiboFile新浪微博图片上传插件
+### Typecho-WeiboFile新浪（优酷）微博图片（视频）上传插件
 ---
 
-将 Typecho 的附件上传至新浪微博云存储中，无需申请appid，不占用服务器大小，可永久保存，只需一个不会登录的微博小号即可。
+将 Typecho 的附件上传至新浪（优酷）微博云存储中，无需申请appid，不占用服务器大小，可永久保存，只需一个不会登录的微博小号即可。
 
 程序有可能会遇到bug不改版本号直接修改代码的时候，所以扫描以下二维码关注公众号“同乐儿”，可直接与作者二呆产生联系，不再为bug烦恼，随时随地解决问题。
 
@@ -28,5 +28,6 @@ Github：https://github.com/muzishanshi/WeiboFile
 七牛：https://www.qiniu.com/
 
 #### 更新记录：
+2018-07-09 新增上传视频功能<br />
 2018-07-02 增加了使用备注信息和上传后的图片增加后缀可成为一个完整的图片路径<br />
 2018-05-02 第一版本实现

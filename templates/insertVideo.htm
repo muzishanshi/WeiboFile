@@ -1,0 +1,63 @@
+<script type="text/javascript">
+	$(function(){
+		if($('#wmd-button-row').length>0)
+			$('#wmd-button-row').append('<li class="wmd-button" id="wmd-button-video" style="font-size:20px;float:left;color:#AAA;width:20px;" title=添加视频><b>V</b></li>');
+		else
+	 		$('#text').before('<a href="#" id="wmd-button-video" title="添加视频"><b>V</b></a>');
+		
+	 	$(document).on('click', '#wmd-button-video', function(){
+	 		$(this).after(
+	 			'<div class="wmd-prompt-dialog"><div><p><b>本地视频</b></p><p><font color="red">请注意视频内容的合法性</font></div><form enctype="multipart/form-data"><input type="file" name="video_file" id="video_file"><br /><br /><button id="uploadBtn" type="button" class="btn-s primary" onclick="startUpload(this);">上传</button><button type="button" class="btn-s" onclick="cancelUpload();">取消</button><br /><br /><div id="video_upload_msg"></div></form></div>');
+
+	 	})
+
+	 	//移除弹窗
+	 	if(($('.wmd-prompt-dialog').length != 0) && e.keyCode == '27') {
+			cancelUpload();
+		}
+	})
+
+	function startUpload(e){
+		if($('#video_upload_msg').html()=='<font color="green">上传中，请稍后……</font>'){
+			alert('上传中，请稍后……');
+			return;
+		}
+		video_file = $('#video_file');
+		if(video_file.val() == ''){
+			$('#video_upload_msg').html('<font color="red">请选择一个视频</font>');
+			return;
+		}
+		video_file_name = video_file[0].files[0].name;
+		var xhr=new XMLHttpRequest();
+		xhr.open('POST','<?php echo $ajaxurl?>',true);
+		xhr.upload.onprogress=function(e){
+			$('#video_upload_msg').html('<font color="green">上传中，请稍后……</font>');
+		}
+		xhr.onerror=function(e){
+			$('#video_upload_msg').html('<font color="red">上传错误</font>');
+			return;
+		}
+		xhr.onreadystatechange=function(e){
+			if(xhr.readyState===4 && xhr.status===200){
+				var data=JSON.parse(xhr.responseText);
+				if(data.code==100){
+					$('#video_upload_msg').html('<font color="green">上传成功，可等视频审核通过后再将文章“公开度”设置为“公开”</font>');
+					$('#uploadBtn').css('display','none');
+					var html='\r\n<iframe height=400 width="100%" src="http://player.youku.com/embed/'+data.video_id+'" frameborder=0 "allowfullscreen"></iframe>';
+					$('#text').val($('#text').val()+html);
+				}else{
+					$('#video_upload_msg').html('<font color="red">上传失败</font>');
+				}
+			}
+		}
+		var upload=new FormData();
+		upload.append('movieFile',video_file[0].files[0]);
+		upload.append('action','uploadMovie');
+		upload.append('title',video_file_name);
+		xhr.send(upload);
+	}
+
+	function cancelUpload() {
+		$('.wmd-prompt-dialog').remove()
+	}
+</script>
