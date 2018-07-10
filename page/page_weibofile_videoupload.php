@@ -152,7 +152,7 @@ window.onload = function(){
 			$('#video_span').html('<font color="red">选择要上传的视频</font>');
 			return false;
 		}
-		if(file.size>90000000){
+		if(file.size>50000000){
 			$('#video_span').html('<font color="red">选择的视频过大</font>');
 			return false;
 		}
