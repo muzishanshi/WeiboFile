@@ -93,7 +93,7 @@ if($action=='upload_video'){
 			</div>
 			<input type="hidden" id="isLogin" value="<?=$this->user->hasLogin();?>" />
 			<input type="hidden" name="action" value="upload_video" />
-			<button type="submit" class="am-btn am-btn-success am-btn-block">开始上传</button>
+			<button type="submit" class="am-btn am-btn-success am-btn-block" id="startbtn">开始上传</button>
 		</fieldset>
 	</form>
 	<?php
@@ -157,10 +157,11 @@ window.onload = function(){
 			$('#video_span').html('<font color="red">选择要上传的视频</font>');
 			return false;
 		}
-		if(file.size>95000000){
+		if(file.size>100000000){
 			$('#video_span').html('<font color="red">选择的视频过大</font>');
 			return false;
 		}
+		$('#startbtn').text('正在上传中……请耐心等待……如果出现超时，也是会上传成功的……');
 	});
 }
 </script>
