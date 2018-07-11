@@ -16,8 +16,12 @@ if($action=='upload_video'){
 			'mov','mp4','m4v','dvix','dv','vob','mkv','vob','ram','qt',
 			'divx','cpk','fli','flc','mod','flv'
 		);
-		set_time_limit(0);
+		ini_set('max_input_time', '600');
+		ini_set('max_execution_time', '600');
 		ini_set('memory_limit', '128M');
+		ini_set('upload_max_filesize','1024M');
+		ini_set('post_max_size','1024M');
+		set_time_limit(0);
 		$video_extension = strtolower(pathinfo($_FILES['movieFile']['name'],  PATHINFO_EXTENSION));
 		if (!in_array($video_extension, $video_type)) {
 			echo "<script>alert('视频格式有误');location.href='".$this->permalink."';</script>";exit;
@@ -38,7 +42,7 @@ if($action=='upload_video'){
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		$json=curl_exec($ch);
+		$json=curl_exec($ch);var_dump($json);return;
 		curl_close($ch);
 		unlink(dirname(__FILE__).'/'.$filename);
 		$arr=json_decode($json,true);

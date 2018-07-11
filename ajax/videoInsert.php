@@ -1,8 +1,12 @@
 <?php
 date_default_timezone_set('Asia/Shanghai');
 include '../../../../config.inc.php';
-set_time_limit(0);
+ini_set('max_input_time', '600');
+ini_set('max_execution_time', '600');
 ini_set('memory_limit', '128M');
+ini_set('upload_max_filesize','1024M');
+ini_set('post_max_size','1024M');
+set_time_limit(0);
 
 $action = isset($_POST['action']) ? addslashes($_POST['action']) : '';
 if($action=='uploadMovie'){
