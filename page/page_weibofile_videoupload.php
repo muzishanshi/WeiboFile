@@ -16,7 +16,8 @@ if($action=='upload_video'){
 			'mov','mp4','m4v','dvix','dv','vob','mkv','vob','ram','qt',
 			'divx','cpk','fli','flc','mod','flv'
 		);
-		
+		set_time_limit(0);
+		ini_set('memory_limit', '128M');
 		$video_extension = strtolower(pathinfo($_FILES['movieFile']['name'],  PATHINFO_EXTENSION));
 		if (!in_array($video_extension, $video_type)) {
 			echo "<script>alert('视频格式有误');location.href='".$this->permalink."';</script>";exit;
@@ -152,7 +153,7 @@ window.onload = function(){
 			$('#video_span').html('<font color="red">选择要上传的视频</font>');
 			return false;
 		}
-		if(file.size>50000000){
+		if(file.size>95000000){
 			$('#video_span').html('<font color="red">选择的视频过大</font>');
 			return false;
 		}
