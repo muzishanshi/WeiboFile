@@ -4,7 +4,7 @@
  * 2、在图床的基础上新增上传视频和视频解析的功能。
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.4
+ * @version 1.0.5
  * @link http://www.tongleer.com/
  * @date 2018-07-11
  */
@@ -13,6 +13,7 @@ require __DIR__ . '/include/Sinaupload.php';
 class WeiboFile_Plugin implements Typecho_Plugin_Interface{
     // 激活插件
     public static function activate(){
+		$db = Typecho_Db::get();
 		//图片
         Typecho_Plugin::factory('Widget_Upload')->uploadHandle = array('WeiboFile_Plugin', 'uploadHandle');
         Typecho_Plugin::factory('Widget_Upload')->modifyHandle = array('WeiboFile_Plugin', 'modifyHandle');
@@ -23,6 +24,8 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		Typecho_Plugin::factory('admin/write-page.php')->bottom = array('WeiboFile_Plugin', 'videoInsert');
 		Typecho_Plugin::factory('admin/write-post.php')->option = array('WeiboFile_Plugin', 'videoList');
 		Typecho_Plugin::factory('admin/write-page.php')->option = array('WeiboFile_Plugin', 'videoList');
+		//创建视频上传所用数据表
+		self::createTableVideoUpload($db);
         return _t('插件已经激活，需先配置微博图床的信息！');
     }
 
@@ -53,7 +56,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
     // 插件配置面板
     public static function config(Typecho_Widget_Helper_Form $form){
 		//版本检查
-		$version=file_get_contents('http://api.tongleer.com/interface/WeiboFile.php?action=update&version=4');
+		$version=file_get_contents('http://api.tongleer.com/interface/WeiboFile.php?action=update&version=5');
 		$headDiv=new Typecho_Widget_Helper_Layout();
 		$headDiv->html('版本检查：'.$version);
 		$headDiv->render();
@@ -170,8 +173,6 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 	public static function moduleVideoUpload($db,$videoupload){
 		switch($videoupload){
 			case 'y':
-				//创建视频上传所用数据表
-				self::createTableVideoUpload($db);
 				//判断目录权限，并将插件文件写入主题目录
 				self::funWriteThemePage($db,'page_weibofile_videoupload.php');
 				//如果数据表没有添加页面就插入
@@ -180,7 +181,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		}
 	}
 	
-	/*创建第三方登录缩短所用数据表*/
+	/*创建视频上传所用数据表*/
 	public static function createTableVideoUpload($db){
 		$prefix = $db->getPrefix();
 		//$db->query('DROP TABLE IF EXISTS '.$prefix.'weibofile_videoupload');
