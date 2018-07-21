@@ -1,3 +1,10 @@
+<?php
+/**
+ * 视频上传页面
+ *
+ * @package custom
+ */
+?>
 <?php if (!defined('__TYPECHO_ROOT_DIR__')) exit; ?>
 <?php $this->need('header.php'); ?>
 <?php
