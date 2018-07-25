@@ -4,9 +4,9 @@
  * 2、在图床的基础上新增上传视频和视频解析的功能。
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.5
+ * @version 1.0.6
  * @link http://www.tongleer.com/
- * @date 2018-07-11
+ * @date 2018-07-25
  */
 require __DIR__ . '/include/Sinaupload.php';
 
@@ -56,7 +56,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
     // 插件配置面板
     public static function config(Typecho_Widget_Helper_Form $form){
 		//版本检查
-		$version=file_get_contents('http://api.tongleer.com/interface/WeiboFile.php?action=update&version=5');
+		$version=file_get_contents('http://api.tongleer.com/interface/WeiboFile.php?action=update&version=6');
 		$headDiv=new Typecho_Widget_Helper_Layout();
 		$headDiv->html('版本检查：'.$version);
 		$headDiv->render();
