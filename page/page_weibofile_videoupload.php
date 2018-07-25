@@ -49,7 +49,7 @@ if($action=='upload_video'){
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		$json=curl_exec($ch);var_dump($json);return;
+		$json=curl_exec($ch);
 		curl_close($ch);
 		unlink(dirname(__FILE__).'/'.$filename);
 		$arr=json_decode($json,true);
