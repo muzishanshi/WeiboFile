@@ -15,7 +15,7 @@ if($action=='upload_video'){
 		if($_FILES['movieFile']['error']!=0){
 			echo "<script>alert('上传错误');location.href='".$this->permalink."';</script>";exit;
 		}
-		if($_FILES['movieFile']['size']>1024*1024*1024){
+		if($_FILES['movieFile']['size']>1024*1024*5){
 			echo "<script>alert('最大上传视频为1G');location.href='".$this->permalink."';</script>";exit;
 		}
 		$video_type = array(
@@ -164,7 +164,7 @@ window.onload = function(){
 			$('#video_span').html('<font color="red">选择要上传的视频</font>');
 			return false;
 		}
-		if(file.size>100000000){
+		if(file.size>5000000){
 			$('#video_span').html('<font color="red">选择的视频过大</font>');
 			return false;
 		}
