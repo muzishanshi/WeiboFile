@@ -282,13 +282,56 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 				'mime'  =>  Typecho_Common::mimeContentType($filename)
 			);
 		}else{
-			return array(
-				'name'  =>  $file['name'],
-				'path'  =>  '插件WeiboFile暂时只限上传gif、jpg、jpeg、png、bmp图片格式的附件',
-				'size'  =>  $file['size'],
-				'type'  =>  $ext,
-				'mime'  =>  Typecho_Common::mimeContentType($filename)
-			);
+			$uid=Typecho_Cookie::get('__typecho_uid');
+			$db = Typecho_Db::get();
+			$prefix = $db->getPrefix();
+			$filename = iconv("utf-8", "gbk", $file['name']);
+			move_uploaded_file($file['tmp_name'], dirname(__FILE__).'/'.$filename);
+			$ch = curl_init();
+			$filePath = dirname(__FILE__).'/'.$filename;
+			$data = array('action' => 'uploadMovie', 'movieFile' => '@' . $filePath);
+			if (class_exists('\CURLFile')) {
+				$data['movieFile'] = new \CURLFile(realpath($filePath));
+			} else {
+				if (defined('CURLOPT_SAFE_UPLOAD')) {
+					curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
+				}
+			}
+			curl_setopt($ch, CURLOPT_URL, 'http://me.tongleer.com/mob/app/wap/json/blogjson.php');
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			$json=curl_exec($ch);
+			curl_close($ch);
+			unlink(dirname(__FILE__).'/'.$filename);
+			$arr=json_decode($json,true);
+			if($arr['code']==100){
+				$insertData = array(
+					'videoupid'   =>  $arr['video_id'],
+					'videoupuid'   =>  $uid,
+					'videoupurl'     =>  'http://player.youku.com/embed/'.$arr['video_id'],
+					'videouppic'     =>  '',
+					'videoupinstime'     =>  date('Y-m-d H:i:s',time()),
+					'videouptype'     =>  'youku'
+				);
+				$insert = $db->insert('table.weibofile_videoupload')->rows($insertData);
+				$insertId = $db->query($insert);
+				return array(
+					'name'  =>  $file['name'],
+					'path'  =>  $arr['video_id'],
+					'size'  =>  $file['size'],
+					'type'  =>  $ext,
+					'mime'  =>  Typecho_Common::mimeContentType($filename)
+				);
+			}else{
+				return array(
+					'name'  =>  $file['name'],
+					'path'  =>  '上传失败',
+					'size'  =>  $file['size'],
+					'type'  =>  $ext,
+					'mime'  =>  Typecho_Common::mimeContentType($filename)
+				);
+			}
 		}
     }
 
@@ -310,6 +353,12 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
     // 获取实际文件绝对访问路径
     public static function attachmentHandle(array $content){
         $option = self::getConfig();
-        return Typecho_Common::url($content['attachment']->path.'.jpg', 'https://ws3.sinaimg.cn/large/');
+		//http://player.youku.com/embed/
+		$path=$content['attachment']->path;
+		if(strpos($path,"==")){
+			return Typecho_Common::url($content['attachment']->path.'', 'http://player.youku.com/embed/');
+		}else{
+			return Typecho_Common::url($content['attachment']->path.'.jpg', 'https://ws3.sinaimg.cn/large/');
+		}
     }
 }
