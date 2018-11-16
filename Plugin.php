@@ -19,13 +19,13 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
         Typecho_Plugin::factory('Widget_Upload')->modifyHandle = array('WeiboFile_Plugin', 'modifyHandle');
         Typecho_Plugin::factory('Widget_Upload')->deleteHandle = array('WeiboFile_Plugin', 'deleteHandle');
         Typecho_Plugin::factory('Widget_Upload')->attachmentHandle = array('WeiboFile_Plugin', 'attachmentHandle');
+		//创建视频上传所用数据表
+		self::createTableVideoUpload($db);
 		//视频
 		Typecho_Plugin::factory('admin/write-post.php')->bottom = array('WeiboFile_Plugin', 'videoInsert');
 		Typecho_Plugin::factory('admin/write-page.php')->bottom = array('WeiboFile_Plugin', 'videoInsert');
 		Typecho_Plugin::factory('admin/write-post.php')->option = array('WeiboFile_Plugin', 'videoList');
 		Typecho_Plugin::factory('admin/write-page.php')->option = array('WeiboFile_Plugin', 'videoList');
-		//创建视频上传所用数据表
-		self::createTableVideoUpload($db);
         return _t('插件已经激活，需先配置微博图床的信息！');
     }
 
