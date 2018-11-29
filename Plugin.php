@@ -7,8 +7,9 @@
  * @author 二呆
  * @version 1.0.7
  * @link http://www.tongleer.com/
- * @date 2018-11-29
+ * @date 2018-11-30
  */
+date_default_timezone_set('Asia/Shanghai');
 require __DIR__ . '/include/Sinaupload.php';
 
 class WeiboFile_Plugin implements Typecho_Plugin_Interface{
@@ -95,7 +96,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		$videoupload = new Typecho_Widget_Helper_Form_Element_Radio('videoupload', array(
             'y'=>_t('启用'),
             'n'=>_t('禁用')
-        ), 'n', _t('视频上传'), _t("1、上传的视频需要优酷审核，并且因优酷官方会有需要作者每月手动刷新token才可上传的限制，故<font color='red'>不建议开启</font>。<br />2、使用Typecho自带的附件上传优酷视频时，如果长时间没有弹出网址窗口可尝试刷新一次页面即可。<br />3、为您做到心中有数，启用后会创建".$prefix."weibofile_videoupload数据表、page_weibofile_videoupload.php主题文件、视频上传页面3项，不启用则不会创建，不会添加任何无用项目且与其他插件互不冲突，谢谢支持。"));
+        ), 'n', _t('优酷视频上传'), _t("1、上传的视频需要优酷审核，并且因优酷官方会有需要作者每月手动刷新token才可上传的限制，故<font color='red'>不建议开启</font>。<br />2、使用Typecho自带的附件上传优酷视频时，如果长时间没有弹出网址窗口可尝试刷新一次页面即可。<br />3、为您做到心中有数，启用后会创建".$prefix."weibofile_videoupload数据表、page_weibofile_videoupload.php主题文件、视频上传页面3项，不启用则不会创建，不会添加任何无用项目且与其他插件互不冲突，谢谢支持。"));
         $form->addInput($videoupload->addRule('enum', _t(''), array('y', 'n')));
 		$videoupload = @isset($_POST['videoupload']) ? addslashes(trim($_POST['videoupload'])) : '';
 		self::moduleVideoUpload($db,$videoupload);
@@ -239,7 +240,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 			$contents = array(
 				'title'      =>  $title,
 				'slug'      =>  $slug,
-				'created'   =>  Typecho_Date::time(),
+				'created'   =>  time(),
 				'text'=>  '<!--markdown-->',
 				'password'  =>  '',
 				'authorId'     =>  Typecho_Cookie::get('__typecho_uid'),
@@ -283,6 +284,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 
     // 删除文件
     public static function deleteFile($filepath){
+		@unlink(dirname(__FILE__).'/../../..'.$filepath);
         return true;
     }
 
@@ -374,26 +376,27 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 					);
 				}
 			}else{
-				return self::uploadLocal($file, $content = null,$ext,$option);
+				return self::uploadLocal($db,$file, $content = null,$ext,$option);
 			}
 		}else{
-			return self::uploadLocal($file, $content = null,$ext,$option);
+			return self::uploadLocal($db,$file, $content = null,$ext,$option);
 		}
     }
 	
 	// 上传文件到本地
-    public static function uploadLocal($file, $content = null,$ext,$option){
+    public static function uploadLocal($db,$file, $content = null,$ext,$option){
         if($option->isuploadlocal=='y'){
-			$dirtime=date("Y")."/".date("m");
-			$dir=__TYPECHO_ROOT_DIR__."/usr/uploads/".$dirtime."/";
+			$dirtime=date("Y")."/".date("m").'/';
+			$dir=__TYPECHO_ROOT_DIR__ . "/usr/uploads/".$dirtime."/";
 			if(!file_exists($dir)){
 				mkdir($dir);
 			}
+			$dirupload="/usr/uploads/".$dirtime."/";
 			$pathgbk = iconv("utf-8", "gbk", $dir.$file['name']);
 			move_uploaded_file($file['tmp_name'], $pathgbk);
 			return array(
 				'name'  =>  $file['name'],
-				'path'  =>  $dirtime.'/'.$file['name'],
+				'path'  =>  $dirupload.$file['name'],
 				'size'  =>  $file['size'],
 				'type'  =>  $ext,
 				'mime'  =>  Typecho_Common::mimeContentType($file['tmp_name'])
@@ -438,7 +441,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		}else if(in_array($ext,array('gif','jpg','jpeg','png','bmp'))){
 			return Typecho_Common::url($content['attachment']->path.'.jpg', 'https://ws3.sinaimg.cn/large/');
 		}else{
-			return Typecho_Common::url($content['attachment']->path, $plug_url.'/../uploads/');
+			return Typecho_Common::url($content['attachment']->path, $plug_url.'/../..');
 		}
     }
 }
