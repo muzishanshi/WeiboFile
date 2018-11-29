@@ -26,7 +26,7 @@ if($action=='uploadMovie'){
 			curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 		}
 	}
-	curl_setopt($ch, CURLOPT_URL, 'http://me.tongleer.com/mob/app/wap/json/blogjson.php');
+	curl_setopt($ch, CURLOPT_URL, 'https://tongleer.com/me/mob/app/wap/json/blogjson.php');
 	curl_setopt($ch, CURLOPT_POST, 1);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -38,7 +38,7 @@ if($action=='uploadMovie'){
 		$insertData = array(
 			'videoupid'   =>  $arr['video_id'],
 			'videoupuid'   =>  $uid,
-			'videoupurl'     =>  'http://player.youku.com/embed/'.$arr['video_id'],
+			'videoupurl'     =>  'https://player.youku.com/embed/'.$arr['video_id'],
 			'videouppic'     =>  '',
 			'videoupinstime'     =>  date('Y-m-d H:i:s',Typecho_Date::time()),
 			'videouptype'     =>  'youku'

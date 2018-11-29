@@ -5,7 +5,13 @@
  * @package custom
  */
 ?>
-<?php if (!defined('__TYPECHO_ROOT_DIR__')) exit; ?>
+<?php
+if (!defined('__TYPECHO_ROOT_DIR__')) exit;
+$options = Typecho_Widget::widget('Widget_Options');
+$option=$options->plugin('WeiboFile');
+if ($option->videoupload!='y') exit;
+try{
+?>
 <?php $this->need('header.php'); ?>
 <?php
 date_default_timezone_set('Asia/Shanghai');
@@ -45,7 +51,7 @@ if($action=='upload_video'){
 				curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 			}
 		}
-		curl_setopt($ch, CURLOPT_URL, 'http://me.tongleer.com/mob/app/wap/json/blogjson.php');
+		curl_setopt($ch, CURLOPT_URL, 'https://tongleer.com/me/mob/app/wap/json/blogjson.php');
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -57,7 +63,7 @@ if($action=='upload_video'){
 			$insertData = array(
 				'videoupid'   =>  $arr['video_id'],
 				'videoupuid'   =>  Typecho_Cookie::get('__typecho_uid'),
-				'videoupurl'     =>  'http://player.youku.com/embed/'.$arr['video_id'],
+				'videoupurl'     =>  'https://player.youku.com/embed/'.$arr['video_id'],
 				'videouppic'     =>  '',
 				'videoupinstime'     =>  date('Y-m-d H:i:s',Typecho_Date::time()),
 				'videouptype'     =>  'youku'
@@ -71,8 +77,8 @@ if($action=='upload_video'){
 	}
 }
 ?>
-<link rel="stylesheet" href="http://cdn.amazeui.org/amazeui/2.7.2/css/amazeui.min.css"/>
-<script src="http://apps.bdimg.com/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/amazeui/2.7.2/css/amazeui.min.css"/>
+<script src="https://apps.bdimg.com/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 <style>
 .page-main{
 	background-color:#fff;
@@ -94,7 +100,7 @@ if($action=='upload_video'){
 						<button type="button" class="am-btn am-btn-default am-btn-sm">
 						  <i class="am-icon-cloud-upload"></i> <span id="video_span">选择要上传的视频</span></button>
 					  </div>
-					  <input type="file" name="movieFile" id="movieFile">
+					  <input type="file" name="movieFile" id="movieFile" accept="video/*">
 					</div>
 				</div>
 			</div>
@@ -173,5 +179,8 @@ window.onload = function(){
 }
 </script>
 <!-- end content section -->
-<script src="http://cdn.amazeui.org/amazeui/2.7.2/js/amazeui.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/amazeui/2.7.2/js/amazeui.min.js" type="text/javascript"></script>
 <?php $this->need('footer.php'); ?>
+<?php
+}catch(Exception $e){}
+?>
