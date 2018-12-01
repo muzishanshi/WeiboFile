@@ -34,7 +34,7 @@ try{
 </head>
 <body>
 <div id="weibofile_webimg_container" onclick="weibofile_file.click()" style="margin:5px 0px;position: relative; border: 2px dashed #e2e2e2; background-image:url('<?=$option->webimgbg;?>'); text-align: center; cursor: pointer;height: 100%;">
-	<p id="weibofile_webimg_upload" style="height: <?=$option->webimgheight;?>px;line-height:<?=$option->webimgheight;?>px;position: relative;font-size:20px; color:#d3d3d3;">将图片拖拽到此区域上传</p> 
+	<p id="weibofile_webimg_upload" style="height: <?=$option->webimgheight;?>px;line-height:<?=$option->webimgheight;?>px;position: relative;font-size:20px; color:#d3d3d3;">将图片拖拽到此上传</p> 
 	<input type="file" id="weibofile_file" style="display:none" accept="image/*" multiple /> 
 </div>
 <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
@@ -106,7 +106,7 @@ function upLoad(file){
 			}else if(data.status=="disable"){
 				weibofile_webimgdiv.innerHTML = data.msg;
 			}else if(data.status=="ok"){
-				weibofile_webimgdiv.innerHTML = '将图片拖拽到此区域上传';
+				weibofile_webimgdiv.innerHTML = '将图片拖拽到此上传';
 				layer.confirm('<small><font color="green">'+data.msg+'<br />'+data.hrefs+'</font></small><textarea style="width:100%;margin: 0 auto;" rows="2" onfocus="this.select();">'+data.codes+'</textarea>', {
 					btn: ['关闭']
 				},function(index){
