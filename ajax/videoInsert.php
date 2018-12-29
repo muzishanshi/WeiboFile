@@ -48,6 +48,75 @@ if($action=='uploadMovie'){
 	}
 	
 	echo $json;
+}else if($action=='uploadImg'){
+	$uid = isset($_GET['uid']) ? addslashes($_GET['uid']) : '';
+	$cid = isset($_POST['cid']) ? addslashes($_POST['cid']) : '';
+	$file=$_FILES['imgFile'];
+	$db = Typecho_Db::get();
+	$options = Typecho_Widget::widget('Widget_Options');
+	$option=$options->plugin('WeiboFile');
+	if(!class_exists('Sinaupload')){
+		require_once dirname(__FILE__) . '/../include/Sinaupload.php';
+	}
+	$key=0;
+	$imgs=array();
+	for($i=0,$j=count($file["name"]);$i<$j;$i++){
+		$name=$file['name'][$i];
+        if (empty($name)) $code=-1;
+        $part = explode('.', $name);
+        $ext = (($length = count($part)) > 1) ? strtolower($part[$length-1]) : '';
+        if (!Widget_Upload::checkFileType($ext)) $code=-2;// 上传文件
+        $filename = $file['tmp_name'][$i];
+        if (!isset($filename)) $code=-3;
+		if(!in_array($ext,array('gif','jpg','jpeg','png','bmp'))){
+			$code=-4;
+		}
+		$Sinaupload=new Sinaupload('');
+		$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
+		$result=$Sinaupload->upload($file['tmp_name'][$i]);
+		$arr = json_decode($result,true);
+		if(isset($arr['data']['pics']['pic_1']['pid'])){
+			$url='https://ws3.sinaimg.cn/large/' . $arr['data']['pics']['pic_1']['pid'] . '.jpg';
+			$text=array(
+				'name'  =>  $name,
+				'path'  =>  $url,
+				'size'  =>  $file['size'][$i],
+				'type'  =>  $ext,
+				'mime'  =>  Typecho_Common::mimeContentType($file['tmp_name'][$i])
+			);
+			$insertData = array(
+				'title'   =>  $name,
+				'slug'   =>  $name,
+				'parent'   =>  $cid,
+				'created'     =>  time(),
+				'modified'     =>  time(),
+				'text'     =>  serialize($text),
+				'authorId'     =>  $uid,
+				'type'     =>  'attachment',
+				'status'     =>  'publish',
+				'allowComment'     =>  '1',
+				'allowFeed'     =>  '1'
+			);
+			$insert = $db->insert('table.contents')->rows($insertData);
+			$insertId = $db->query($insert);
+			$code=100;
+		}else{
+			$code=-5;
+			$url="";
+		}
+		$imgs[$key]["code"]=$code;
+		$imgs[$key]["name"]=$name;
+		$imgs[$key]["url"]=$url;
+		$key++;
+	}
+	foreach($imgs as $k=>$v){
+		foreach ( $imgs[$k] as $key => $value ) {
+			$imgs[$k][$key] = urlencode ( $value );  
+		} 
+	}
+	$json=urldecode(json_encode($imgs));
+	echo $json;
+	exit;
 }else if($action=='parseMovie'){
 	require dirname(__FILE__).'/../include/UrlParse.php';
 	$video_url = isset($_POST['video_url']) ? addslashes($_POST['video_url']) : '';
