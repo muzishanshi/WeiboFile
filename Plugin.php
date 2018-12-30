@@ -5,9 +5,9 @@
  * 3、新增前台微博图床上传。
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.8
+ * @version 1.0.9
  * @link http://www.tongleer.com/
- * @date 2018-12-29
+ * @date 2018-12-30
  */
 date_default_timezone_set('Asia/Shanghai');
 require __DIR__ . '/include/Sinaupload.php';
@@ -57,7 +57,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
     // 插件配置面板
     public static function config(Typecho_Widget_Helper_Form $form){
 		//版本检查
-		$version=file_get_contents('https://tongleer.com/api/interface/WeiboFile.php?action=update&version=8');
+		$version=file_get_contents('https://tongleer.com/api/interface/WeiboFile.php?action=update&version=9');
 		$headDiv=new Typecho_Widget_Helper_Layout();
 		$headDiv->html('<small>版本检查：'.$version.'</small>');
 		$headDiv->render();

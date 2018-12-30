@@ -1,7 +1,11 @@
 <?php
 $options = Typecho_Widget::widget('Widget_Options');
 $option=$options->plugin('WeiboFile');
-Typecho_Widget::widget('Widget_Contents_Post_Edit')->to($post);
+if(strpos($_SERVER['PHP_SELF'],"write-page")){
+	Typecho_Widget::widget('Widget_Contents_Page_Edit')->to($post);
+}else{
+	Typecho_Widget::widget('Widget_Contents_Post_Edit')->to($post);
+}
 try{
 ?>
 <input type="hidden" id="weibofile_is_videoupload" value="<?=$option->videoupload;?>" />

@@ -26,6 +26,15 @@
 Github：https://github.com/muzishanshi/WeiboFile
 
 #### 更新记录：
+2018-12-30 1.0.9
+
+	修复了因少做判断导致的后台页面出现404情况：
+	if(strpos($_SERVER['PHP_SELF'],"write-page")){
+		Typecho_Widget::widget('Widget_Contents_Page_Edit')->to($post);
+	}else{
+		Typecho_Widget::widget('Widget_Contents_Post_Edit')->to($post);
+	}
+	
 2018-12-29 1.0.8
 
 	后台新增多图片上传，然后发现如果域名是主机屋的免费空间且未备案，则会限制一些权限，导致上传失败，请知悉。
