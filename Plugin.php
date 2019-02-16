@@ -57,7 +57,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
     // 插件配置面板
     public static function config(Typecho_Widget_Helper_Form $form){
 		//版本检查
-		$version=file_get_contents('https://tongleer.com/api/interface/WeiboFile.php?action=update&version=9');
+		$version=file_get_contents('https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=9');
 		$headDiv=new Typecho_Widget_Helper_Layout();
 		$headDiv->html('<small>版本检查：'.$version.'</small>');
 		$headDiv->render();
