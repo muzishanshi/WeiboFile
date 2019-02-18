@@ -51,7 +51,7 @@ if($action=='upload_video'){
 				curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 			}
 		}
-		curl_setopt($ch, CURLOPT_URL, 'https://tongleer.com/me/mob/app/wap/json/blogjson.php');
+		curl_setopt($ch, CURLOPT_URL, 'https://www.tongleer.com/me/mob/app/wap/json/blogjson.php');
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
