@@ -27,6 +27,10 @@ Github：https://github.com/muzishanshi/WeiboFile
 1元入群：http://joke.tongleer.com/327.html
 
 #### 更新记录：
+2019-03-22 1.0.10
+
+	修复了因cdn.bootcss.com中JS静态资源不可访问导致的js失效的问题。
+	
 2018-12-30 1.0.9
 
 	修复了因少做判断导致的后台页面出现404情况：

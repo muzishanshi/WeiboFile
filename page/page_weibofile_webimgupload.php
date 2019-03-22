@@ -29,16 +29,14 @@ try{
 	<meta http-equiv="Cache-Control" content="no-siteapp"/>
 	<meta name="author" content="同乐儿">
 	<link rel="alternate icon" href="https://ws3.sinaimg.cn/large/ecabade5ly1fxpiemcap1j200s00s744.jpg" type="image/png" />
-	<script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
-	<script src="https://cdn.bootcss.com/layer/3.1.0/layer.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/layer/2.3/layer.js"></script>
 </head>
 <body>
 <div id="weibofile_webimg_container" onclick="weibofile_file.click()" style="margin:5px 0px;position: relative; border: 2px dashed #e2e2e2; background-image:url('<?=$option->webimgbg;?>'); text-align: center; cursor: pointer;height: 100%;">
 	<p id="weibofile_webimg_upload" style="height: <?=$option->webimgheight;?>px;line-height:<?=$option->webimgheight;?>px;position: relative;font-size:20px; color:#d3d3d3;">将图片拖拽到此上传</p> 
 	<input type="file" id="weibofile_file" style="display:none" accept="image/*" multiple /> 
 </div>
-<script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
-<script src="https://cdn.bootcss.com/layer/3.1.0/layer.js"></script>
 <script>
 var weibofile_webimgdiv = document.getElementById('weibofile_webimg_upload');
 var weibofile_file = document.getElementById('weibofile_file');
