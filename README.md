@@ -27,6 +27,10 @@ Github：https://github.com/muzishanshi/WeiboFile
 1元入群：http://joke.tongleer.com/327.html
 
 #### 更新记录：
+2019-03-22 1.0.11
+
+	因网站换https，更换了上传视频时的api接口链接。
+	
 2019-03-22 1.0.10
 
 	修复了因cdn.bootcss.com中JS静态资源不可访问导致的js失效的问题。

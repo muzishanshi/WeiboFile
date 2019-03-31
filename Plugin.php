@@ -5,7 +5,7 @@
  * 3、新增前台微博图床上传。
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.10
+ * @version 1.0.11
  * @link http://www.tongleer.com/
  * @date 2019-03-22
  */
@@ -57,7 +57,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
     // 插件配置面板
     public static function config(Typecho_Widget_Helper_Form $form){
 		//版本检查
-		$version=file_get_contents('https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=10');
+		$version=file_get_contents('https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=11');
 		$headDiv=new Typecho_Widget_Helper_Layout();
 		$headDiv->html('<small>版本检查：'.$version.'</small>');
 		$headDiv->render();
@@ -340,7 +340,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 						curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 					}
 				}
-				curl_setopt($ch, CURLOPT_URL, 'https://tongleer.com/me/mob/app/wap/json/blogjson.php');
+				curl_setopt($ch, CURLOPT_URL, 'https://me.tongleer.com/mob/app/wap/json/blogjson.php');
 				curl_setopt($ch, CURLOPT_POST, 1);
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

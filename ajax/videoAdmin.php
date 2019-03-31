@@ -11,7 +11,7 @@ if($action=='videoShow'){
 		"action"=>"showMovie",
 		"id"=>$id
 	);
-	$url = 'https://tongleer.com/me/mob/app/wap/json/blogjson.php';
+	$url = 'https://me.tongleer.com/mob/app/wap/json/blogjson.php';
 	$client = Typecho_Http_Client::get();
 	if ($client) {
 		$str = "";
