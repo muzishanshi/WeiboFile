@@ -30,7 +30,7 @@ try{
 	 	});
 		$(document).on('click', '#wmd-button-weiboimg', function(){
 	 		$(this).after(
-	 			'<div class="wmd-prompt-dialog"><div><p><b>微博图床</b></p><p>由于一些使用虚拟主机的站长可能由于权限问题，导致不能在附件处上传，特新增此处上传以便解决此类问题。</p></div><form enctype="multipart/form-data"><input type="file" name="img_file" id="img_file" accept="image/*" multiple><br /><br /><button id="uploadImgBtn" type="button" class="btn-s primary" onclick="startImgUpload(this);">上传并插入</button><button type="button" class="btn-s" onclick="cancelAlert();">取消</button><br /><br /><div id="img_upload_msg"></div><br /></form></div>');
+	 			'<div class="wmd-prompt-dialog"><div><p><b>微博图床</b></p><p>由于附件处上传后不能批量插入图片，因此此处上传即可以解决批量插入图片或因虚拟主机权限不能上传的问题。<br />如果勾选了保存到微博相册，则每次只能上传一张图片。</p></div><form enctype="multipart/form-data"><input type="file" name="img_file" id="img_file" accept="image/*" multiple><br /><br /><button id="uploadImgBtn" type="button" class="btn-s primary" onclick="startImgUpload(this);">上传并插入</button><button type="button" class="btn-s" onclick="cancelAlert();">取消</button><br /><br /><div id="img_upload_msg"></div><br /></form></div>');
 
 	 	});
 

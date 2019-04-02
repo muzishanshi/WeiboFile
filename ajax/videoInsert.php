@@ -40,7 +40,7 @@ if($action=='uploadMovie'){
 			'videoupuid'   =>  $uid,
 			'videoupurl'     =>  'https://player.youku.com/embed/'.$arr['video_id'],
 			'videouppic'     =>  '',
-			'videoupinstime'     =>  date('Y-m-d H:i:s',Typecho_Date::time()),
+			'videoupinstime'     =>  date('Y-m-d H:i:s',time()),
 			'videouptype'     =>  'youku'
 		);
 		$insert = $db->insert('table.weibofile_videoupload')->rows($insertData);
@@ -55,9 +55,8 @@ if($action=='uploadMovie'){
 	$db = Typecho_Db::get();
 	$options = Typecho_Widget::widget('Widget_Options');
 	$option=$options->plugin('WeiboFile');
-	if(!class_exists('Sinaupload')){
-		require_once dirname(__FILE__) . '/../include/Sinaupload.php';
-	}
+	$plug_url = $options->pluginUrl;
+	
 	$key=0;
 	$imgs=array();
 	for($i=0,$j=count($file["name"]);$i<$j;$i++){
@@ -65,49 +64,111 @@ if($action=='uploadMovie'){
         if (empty($name)) $code=-1;
         $part = explode('.', $name);
         $ext = (($length = count($part)) > 1) ? strtolower($part[$length-1]) : '';
-        if (!Widget_Upload::checkFileType($ext)) $code=-2;// �ϴ��ļ�
+        if (!Widget_Upload::checkFileType($ext)) $code=-2;// 上传文件
         $filename = $file['tmp_name'][$i];
         if (!isset($filename)) $code=-3;
 		if(!in_array($ext,array('gif','jpg','jpeg','png','bmp'))){
 			$code=-4;
 		}
-		$Sinaupload=new Sinaupload('');
-		$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
-		$result=$Sinaupload->upload($file['tmp_name'][$i]);
-		$arr = json_decode($result,true);
-		if(isset($arr['data']['pics']['pic_1']['pid'])){
-			$url='https://ws3.sinaimg.cn/large/' . $arr['data']['pics']['pic_1']['pid'] . '.jpg';
-			$text=array(
-				'name'  =>  $name,
-				'path'  =>  $url,
-				'size'  =>  $file['size'][$i],
-				'type'  =>  $ext,
-				'mime'  =>  Typecho_Common::mimeContentType($file['tmp_name'][$i])
-			);
-			$insertData = array(
-				'title'   =>  $name,
-				'slug'   =>  $name,
-				'parent'   =>  $cid,
-				'created'     =>  time(),
-				'modified'     =>  time(),
-				'text'     =>  serialize($text),
-				'authorId'     =>  $uid,
-				'type'     =>  'attachment',
-				'status'     =>  'publish',
-				'allowComment'     =>  '1',
-				'allowFeed'     =>  '1'
-			);
-			$insert = $db->insert('table.contents')->rows($insertData);
-			$insertId = $db->query($insert);
-			$code=100;
+		
+		if($option->issavealbum=="n"){
+			if(!class_exists('Sinaupload')){
+				require_once dirname(__FILE__) . '/../include/Sinaupload.php';
+			}
+			$Sinaupload=new Sinaupload('');
+			$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
+			$result=$Sinaupload->upload($file['tmp_name'][$i]);
+			$arr = json_decode($result,true);
+			if(isset($arr['data']['pics']['pic_1']['pid'])){
+				$url='https://ws3.sinaimg.cn/large/' . $arr['data']['pics']['pic_1']['pid'] . '.jpg';
+				$text=array(
+					'name'  =>  $name,
+					'path'  =>  $url,
+					'size'  =>  $file['size'][$i],
+					'type'  =>  $ext,
+					'mime'  =>  Typecho_Common::mimeContentType($file['tmp_name'][$i])
+				);
+				$insertData = array(
+					'title'   =>  $name,
+					'slug'   =>  $name,
+					'parent'   =>  $cid,
+					'created'     =>  time(),
+					'modified'     =>  time(),
+					'text'     =>  serialize($text),
+					'authorId'     =>  $uid,
+					'type'     =>  'attachment',
+					'status'     =>  'publish',
+					'allowComment'     =>  '1',
+					'allowFeed'     =>  '1'
+				);
+				$insert = $db->insert('table.contents')->rows($insertData);
+				$insertId = $db->query($insert);
+				$code=100;
+			}else{
+				$code=-5;
+				$url="";
+			}
 		}else{
-			$code=-5;
-			$url="";
+			if(!class_exists('SaeTOAuthV2')&&!class_exists('SaeTClientV2')){
+				include_once dirname(__FILE__) .'/../include/saetv2.ex.class.php';
+			}
+			$config_weibooauth=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../../plugins/WeiboFile/config/config_weibooauth.php'),'<?php die; ?>'));
+			$config_weibotoken=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../../plugins/WeiboFile/config/config_weibotoken.php'),'<?php die; ?>'));
+			
+			$time=time();
+			$utfname=$time."_".$name;
+			$gbkname = iconv("utf-8", "gbk", $utfname);
+			move_uploaded_file($filename, dirname(__FILE__).'/../uploadfile/'.$gbkname);
+			$img=$plug_url."/WeiboFile/uploadfile/".$utfname;
+			
+			/* 修改了下风格，并添加文章关键词作为微博话题，提高与其他相关微博的关联率 */
+			$string1 = '【'.$options->title.'】';
+			$string2 = '来源：'.$options->siteUrl;
+			/* 微博字数控制，避免超标同步失败 */
+			$postData = $string1.mb_strimwidth("贴图",0, 140,'...').$string2;
+			
+			$c = new SaeTClientV2( $config_weibooauth["weiboappkey"] , $config_weibooauth["weiboappsecret"] , $config_weibotoken["access_token"] );
+			$arr=$c->share($postData,$img);
+			unlink(dirname(__FILE__).'/../uploadfile/'.$gbkname);
+			
+			if(isset($arr['original_pic'])){
+				$url=$arr['original_pic'];
+				$text=array(
+					'name'  =>  $name,
+					'path'  =>  $url,
+					'size'  =>  $file['size'][$i],
+					'type'  =>  $ext,
+					'mime'  =>  '@'.dirname(__FILE__).'/../uploadfile/'.$utfname
+				);
+				$insertData = array(
+					'title'   =>  $name,
+					'slug'   =>  $name,
+					'parent'   =>  $cid,
+					'created'     =>  time(),
+					'modified'     =>  time(),
+					'text'     =>  serialize($text),
+					'authorId'     =>  $uid,
+					'type'     =>  'attachment',
+					'status'     =>  'publish',
+					'allowComment'     =>  '1',
+					'allowFeed'     =>  '1'
+				);
+				$insert = $db->insert('table.contents')->rows($insertData);
+				$insertId = $db->query($insert);
+				$code=100;
+			}else{
+				$code=-5;
+				$url="";
+			}
 		}
+		
 		$imgs[$key]["code"]=$code;
 		$imgs[$key]["name"]=$name;
 		$imgs[$key]["url"]=$url;
 		$key++;
+		if($option->issavealbum=="y"){
+			break;
+		}
 	}
 	foreach($imgs as $k=>$v){
 		foreach ( $imgs[$k] as $key => $value ) {

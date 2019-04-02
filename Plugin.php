@@ -1,16 +1,19 @@
 <?php
 /**
- * 1、将 Typecho 的附件上传至新浪微博云存储中，无需申请appid，不占用服务器大小，可永久保存，只需一个不会登录的微博小号即可；
- * 2、在图床的基础上新增上传视频和视频解析的功能；
- * 3、新增前台微博图床上传。
+ * 1、将 Typecho 的附件上传至新浪微博云存储中，无需申请appid，不占用服务器大小，可永久保存，只需一个不会登录的微博小号即可；<br />
+ * 2、在图床的基础上新增上传视频和视频解析的功能；<br />
+ * 3、新增前台微博图床上传；<br />
+ * 4、新增微博同步和上传微博相册图床。
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.11
+ * @version 1.0.12
  * @link http://www.tongleer.com/
- * @date 2019-03-22
+ * @date 2019-04-03
  */
+define('WEIBOFILE_VERSION', '12');
 date_default_timezone_set('Asia/Shanghai');
 require __DIR__ . '/include/Sinaupload.php';
+include_once dirname(__FILE__) .'/include/saetv2.ex.class.php';
 
 class WeiboFile_Plugin implements Typecho_Plugin_Interface{
     // 激活插件
@@ -26,7 +29,12 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		Typecho_Plugin::factory('admin/write-page.php')->bottom = array('WeiboFile_Plugin', 'videoInsert');
 		Typecho_Plugin::factory('admin/write-post.php')->option = array('WeiboFile_Plugin', 'videoList');
 		Typecho_Plugin::factory('admin/write-page.php')->option = array('WeiboFile_Plugin', 'videoList');
-        return _t('插件已经激活，需先配置微博图床的信息！');
+		//微博同步
+		Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish = array(__CLASS__, 'weibosync');
+		//判断目录是否存在
+		if(!is_dir(dirname(__FILE__)."/config")){mkdir (dirname(__FILE__)."/config", 0777, true );}
+		if(!is_dir(dirname(__FILE__)."/uploadfile")){mkdir (dirname(__FILE__)."/uploadfile", 0777, true );}
+        return _t('插件已经激活，需先配置WeiboFile插件信息！');
     }
 
     // 禁用插件
@@ -56,21 +64,93 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 
     // 插件配置面板
     public static function config(Typecho_Widget_Helper_Form $form){
-		//版本检查
-		$version=file_get_contents('https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=11');
-		$headDiv=new Typecho_Widget_Helper_Layout();
-		$headDiv->html('<small>版本检查：'.$version.'</small>');
-		$headDiv->render();
-		
 		$db = Typecho_Db::get();
 		$prefix = $db->getPrefix();
 		$options = Typecho_Widget::widget('Widget_Options');
 		$plug_url = $options->pluginUrl;
 		
-        $weibouser = new Typecho_Widget_Helper_Form_Element_Text('weibouser', null, '', _t('微博小号用户名'), _t('备注：设置后可多尝试多上传几次，上传成功尽量不要将此微博小号登录微博系的网站、软件，可以登录，但不确定会不会上传失败，上传失败了再重新上传2次同样可以正常上传，如果小号等级过低，可尝试微博大号，插件可正常使用，无需担心。'));
+		$config_weibooauth=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../plugins/WeiboFile/config/config_weibooauth.php'),'<?php die; ?>'));
+		$config_weibotoken=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../plugins/WeiboFile/config/config_weibotoken.php'),'<?php die; ?>'));
+		
+		if (!isset($_GET['oauth_token']) && !isset($config_weibotoken["access_token"])){
+			$weiboflag='<a id="weibooauth" href="javascript:;"><img src="'.$plug_url.'/WeiboFile/images/t-login.png"></a>';
+		}else{
+			$c = new SaeTClientV2( $config_weibooauth["weiboappkey"] , $config_weibooauth["weiboappsecret"] , $config_weibotoken["access_token"] );
+			$ms  = $c->show_user_by_id($config_weibotoken["uid"]);
+			$weiboflag='<ul style="list-style:none">';
+			if(isset($ms['error_code'])){
+				$weiboflag.='
+					<li>获取用户信息失败,错误代码:'.$ms['error_code'].',错误信息：'.$ms['error'].'</li>
+					<li><a id="weiboreoauth" href="javascript:;">更换账号</a>,(更换账户
+					时请先退出当前浏览器中新浪微博(weibo.com)的登录状态).</li>
+				';
+			}else{
+				$ti = $c->get_token_info();
+				$weiboflag.='
+					<li><img src="'.$ms['profile_image_url'].'" style="border:2px #CCCCCC solid;"/></li>
+					<li>当前新浪微博账号<b>'.$ms['name'].'</b>，<a id="weiboreoauth" href="javascript:;">更换账号</a>(更换账户
+					时请先退出当前浏览器中新浪微博(weibo.com)的登录状态).</li>
+					<li>离授权过期还有：'.self::sinav2_expire_in($ti['expire_in']).'，授权开始时间：'.gmdate('Y-n-j G:i l', $ti['create_at']).'，授权过期时间：'.gmdate('Y-n-j G:i l', 0+$ti['create_at']+$ti['expire_in']).'</li>
+				';
+			}
+			$weiboflag.='</ul>';
+		}
+		
+		//版本检查
+		$headDiv=new Typecho_Widget_Helper_Layout();
+		$headDiv->html('
+			<script src="https://apps.bdimg.com/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+			<small>版本检查：<span id="versionCode"></span></small>
+			<h2>微博同步相关配置</h2>
+			<p>App Key：&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="weiboappkey" value="'.$config_weibooauth["weiboappkey"].'" /></p>
+			<p>App Secret：<input type="text" id="weiboappsecret" value="'.$config_weibooauth["weiboappsecret"].'" /></p>
+			<p>回调接口：'.$plug_url.'/WeiboFile/weibocallback.php</p>
+			<p>特别注意：微博开放平台的安全域名要与网站域名一致。</p>
+			<p>'.$weiboflag.'</p>
+			<script>
+				$(function(){
+					$.post("'.$plug_url.'/WeiboFile/ajax/update.php",{version:'.WEIBOFILE_VERSION.'},function(data){
+						$("#versionCode").html(data);
+					});
+					$("#weibooauth").click(function(){
+						if($("#weiboappkey").val()==""||$("#weiboappsecret").val()==""){
+							alert("请填写AppKey和AppSecret");
+							return;
+						}
+						$.post("'.$plug_url.'/WeiboFile/ajax/weibooauth.php",{action:"weibooauth",weiboappkey:$("#weiboappkey").val(),weiboappsecret:$("#weiboappsecret").val()},function(data){
+							var data=JSON.parse(data);
+							if(data.status=="ok"){
+								window.open(data.sinav2_aurl, "_blank", "height=400, width=600, top=0, left=0, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no");
+							}else{
+								alert("授权失败");
+							}
+						});
+					});
+					$("#weiboreoauth").click(function(){
+						$.post("'.$plug_url.'/WeiboFile/ajax/weibooauth.php",{action:"weiboreoauth",weiboappkey:$("#weiboappkey").val(),weiboappsecret:$("#weiboappsecret").val()},function(data){
+							var data=JSON.parse(data);
+							if(data.status=="ok"){
+								window.location.reload();
+							}else{
+								alert(data.msg);
+							}
+						});
+					});
+				});
+			</script>
+		');
+		$headDiv->render();
+		
+		$issavealbum = new Typecho_Widget_Helper_Form_Element_Radio('issavealbum', array(
+            'y'=>_t('是'),
+            'n'=>_t('否')
+        ), 'n', _t('是否保存到微博相册'), _t("默认不会保存到自己微博账号，保存到微博相册时如果频繁会禁用当前微博的接口，所以每次只能上传一张图片。"));
+		$form->addInput($issavealbum->addRule('enum', _t(''), array('y', 'n')));
+		
+        $weibouser = new Typecho_Widget_Helper_Form_Element_Text('weibouser', null, '', _t('微博用户名(非新注册、非二维码登陆，且使用过一段时间的账号)'), _t('备注：设置后可多尝试多上传几次，上传成功尽量不要将此微博小号登录微博系的网站、软件，可以登录，但不确定会不会上传失败，上传失败了再重新上传2次同样可以正常上传，如果小号等级过低，可尝试微博大号，微博账号不能有手机验证权限，插件可正常使用，无需担心。'));
         $form->addInput($weibouser->addRule('required', _t('微博小号用户名不能为空！')));
 
-        $weibopass = new Typecho_Widget_Helper_Form_Element_Password('weibopass', null, '', _t('微博小号密码'));
+        $weibopass = new Typecho_Widget_Helper_Form_Element_Password('weibopass', null, '', _t('微博密码'));
         $form->addInput($weibopass->addRule('required', _t('微博小号密码不能为空！')));
 		
 		$isuploadlocal = new Typecho_Widget_Helper_Form_Element_Radio('isuploadlocal', array(
@@ -107,8 +187,8 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 			if(count($resultVideoAdmin)>0){
 				$footDiv = new Typecho_Widget_Helper_Layout();
 				$divstr1='
+					<h2>优酷视频相关配置</h2>
 					<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/amazeui/2.7.2/css/amazeui.min.css"/>
-					<script src="https://apps.bdimg.com/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 					<script src="https://cdnjs.cloudflare.com/ajax/libs/amazeui/2.7.2/js/amazeui.min.js" type="text/javascript"></script>
 					<div style="background-color:#fff;overflow:scroll; height:400px; width:100%; border: solid 0px #aaa; margin: 0 auto;">
 					  <table class="am-table am-table-bordered am-table-striped am-table-compact">
@@ -189,6 +269,11 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 				$footDiv->render();
 			}
 		}catch(Exception $e){}
+		$dottomDiv=new Typecho_Widget_Helper_Layout();
+		$dottomDiv->html('
+			<h2>微博图床相关配置</h2>
+		');
+		$dottomDiv->render();
     }
 	
 	/*前台图床方法*/
@@ -444,4 +529,98 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 			return Typecho_Common::url($content['attachment']->path, $plug_url.'/../..');
 		}
     }
+	
+	/*格式化时间戳*/
+	public static function sinav2_expire_in($timestamp){
+		$d = floor($timestamp/86400);
+		$h = floor(($timestamp%86400)/3600);
+		$i = floor((($timestamp%86400)%3600)/60);
+		$s = floor((($timestamp%86400)%3600)%60);
+		return "{$d}天{$h}小时{$i}分{$s}秒";
+	}
+	
+	/*获取微博字符长度函数*/
+	public static function WeiboLength($str){
+		$len=0;
+		$arr = self::arr_split_zh($str);   //先将字符串分割到数组中
+		foreach ($arr as $v){
+			$temp = ord($v);        //转换为ASCII码
+			if ($temp > 0 && $temp < 127) {
+				$len = $len+0.5;
+			}else{
+				$len ++;
+			}
+		}
+		return ceil($len);        //加一取整
+	}
+	/*拆分字符串函数,只支持 gb2312编码*/
+	public static function arr_split_zh($tempaddtext){
+		$tempaddtext = iconv("UTF-8", "GBK//IGNORE", $tempaddtext);
+		$cind = 0;
+		$arr_cont=array();
+		for($i=0;$i<strlen($tempaddtext);$i++){
+			if(strlen(substr($tempaddtext,$cind,1)) > 0){
+				if(ord(substr($tempaddtext,$cind,1)) < 0xA1 ){ //如果为英文则取1个字节
+					array_push($arr_cont,substr($tempaddtext,$cind,1));
+					$cind++;
+				}else{
+					array_push($arr_cont,substr($tempaddtext,$cind,2));
+					$cind+=2;
+				}
+			}
+		}
+		foreach ($arr_cont as &$row){
+			$row=iconv("gb2312","UTF-8",$row);
+		}
+		return $arr_cont;
+	}
+	
+	/* 抓取文章第一张图片作为特色图片 */
+	public static function catch_first_image($get_post_centent) {
+		ob_start();
+		ob_end_clean();
+		preg_match_all('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $get_post_centent,$matches);
+		if(isset($matches [1] [0])){
+			return $matches [1] [0];
+		}else{
+			return false;
+		}
+	} 
+	
+	/*微博同步*/
+	public static function weibosync($contents, $widget){
+		$options = Typecho_Widget::widget('Widget_Options');
+		$config_weibooauth=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../plugins/WeiboFile/config/config_weibooauth.php'),'<?php die; ?>'));
+		$config_weibotoken=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../plugins/WeiboFile/config/config_weibotoken.php'),'<?php die; ?>'));
+		if(isset($config_weibooauth["weiboappkey"])&&isset($config_weibotoken["access_token"])&&$contents["visibility"]=="publish"&&$contents['created'] < time()&&$contents['created']==null){
+			$keywords = ""; 
+			/* 获取文章标签关键词 */
+			$tags = explode(",",$contents["tags"]);
+			$index=0;
+			foreach ($tags as $tag ) {
+				if($tag!=""){
+					if($index==0){
+						$keywords = " 标签：".$tag;
+					}else{
+						$keywords = $keywords.','.$tag;
+					}
+				}
+				$index++;
+			}
+			/* 修改了下风格，并添加文章关键词作为微博话题，提高与其他相关微博的关联率 */
+			$string1 = '【'.$options->title.'】' . $contents["title"].'：';
+			$string2 = $keywords.' 查看全文：'.$widget->permalink;
+			/* 微博字数控制，避免超标同步失败 */
+			$wb_num = (138 - self::WeiboLength($string1.$string2))*2;
+			$content="";
+			if(strpos($contents["text"], '<!--markdown-->')===0){
+				$content=substr($contents["text"],15);
+			}
+			$postData = $string1.mb_strimwidth(strip_tags( addslashes(Markdown::convert($content))),0, $wb_num,'...').$string2;
+			/* 获取特色图片，如果没设置就抓取文章第一张图片，需要主题函数支持 */
+			$img = self::catch_first_image(Markdown::convert($content));
+			$c = new SaeTClientV2( $config_weibooauth["weiboappkey"] , $config_weibooauth["weiboappsecret"] , $config_weibotoken["access_token"] );
+			$res=$c->share($postData,$img);
+		}
+	}
 }

@@ -65,7 +65,7 @@ if($action=='upload_video'){
 				'videoupuid'   =>  Typecho_Cookie::get('__typecho_uid'),
 				'videoupurl'     =>  'https://player.youku.com/embed/'.$arr['video_id'],
 				'videouppic'     =>  '',
-				'videoupinstime'     =>  date('Y-m-d H:i:s',Typecho_Date::time()),
+				'videoupinstime'     =>  date('Y-m-d H:i:s',time()),
 				'videouptype'     =>  'youku'
 			);
 			$insert = $this->db->insert('table.weibofile_videoupload')->rows($insertData);
