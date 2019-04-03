@@ -144,7 +144,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		$issavealbum = new Typecho_Widget_Helper_Form_Element_Radio('issavealbum', array(
             'y'=>_t('是'),
             'n'=>_t('否')
-        ), 'n', _t('是否保存到微博相册'), _t("默认不会保存到自己微博账号，保存到微博相册时如果频繁会禁用当前微博的接口，所以每次只能上传一张图片。"));
+        ), 'n', _t('是否保存到微博相册'), _t("默认不会保存到自己微博账号，保存到微博相册时如果频繁会禁用当前微博的接口，所以每次只能上传一张图片，<font color=red>且只能通过编辑器按钮上传，附件上传不会保存到微博相册</font>。"));
 		$form->addInput($issavealbum->addRule('enum', _t(''), array('y', 'n')));
 		
         $weibouser = new Typecho_Widget_Helper_Form_Element_Text('weibouser', null, '', _t('微博用户名(非新注册、非二维码登陆，且使用过一段时间的账号)'), _t('备注：设置后可多尝试多上传几次，上传成功尽量不要将此微博小号登录微博系的网站、软件，可以登录，但不确定会不会上传失败，上传失败了再重新上传2次同样可以正常上传，如果小号等级过低，可尝试微博大号，微博账号不能有手机验证权限，插件可正常使用，无需担心。'));
