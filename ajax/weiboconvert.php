@@ -57,6 +57,11 @@ if($action=='updateWBTCLinks'){
 	echo $json;
 }else{
 	/*本地化微博图床链接*/
+	$uploaddir=date("Y")."/".date("m")."/";
+	if(!is_dir(dirname(__FILE__)."/../../../uploads/".$uploaddir)){
+		mkdir (dirname(__FILE__)."/../../../uploads/".$uploaddir, 0777, true );
+	}
+	
 	$postid = isset($_POST['postid']) ? addslashes($_POST['postid']) : '';
 	
 	$query= $db->select()->from('table.contents')->where('cid = ?', $postid); 
@@ -71,10 +76,10 @@ if($action=='updateWBTCLinks'){
 	preg_match_all( "/<(img|IMG).*?src=[\'|\"](?!".$siteUrl.")(.*?)[\'|\"].*?[\/]?>/", $post_content, $localmatches );
 	
 	foreach($localmatches[2] as $url){
-		$uploadfile="uploads/".date("Y")."/".date("m")."/".time().basename($url);
+		$uploadfile=time().basename($url);
 		$html = file_get_contents($url);
-		file_put_contents(dirname(__FILE__)."/../../../".$uploadfile, $html);
-		$imgurl=$options ->siteUrl."/usr/".$uploadfile;
+		file_put_contents(dirname(__FILE__)."/../../../uploads/".$uploaddir.$uploadfile, $html);
+		$imgurl=$options ->siteUrl."usr/uploads/".$uploaddir.$uploadfile;
 		$post_content=str_replace($url,$imgurl,$post_content);
 	}
 	$updateItem = $db->update('table.contents')->rows(array('text'=>"<!--markdown-->!!!\r\n".$post_content."\r\n!!!"))->where('cid=?',$postid);
