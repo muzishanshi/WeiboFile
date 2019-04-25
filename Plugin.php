@@ -3,14 +3,15 @@
  * 1、将 Typecho 的附件上传至新浪微博云存储中，无需申请appid，不占用服务器大小，可永久保存，只需一个不会登录的微博小号即可；<br />
  * 2、在图床的基础上新增上传视频和视频解析的功能；<br />
  * 3、新增前台微博图床上传；<br />
- * 4、新增微博同步和上传微博相册图床。
+ * 4、新增微博同步和上传微博相册图床。<br />
+ * 5、新增远程图片、微博图片之间的转换及图片本地化等。
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.12
+ * @version 1.0.13
  * @link http://www.tongleer.com/
- * @date 2019-04-03
+ * @date 2019-04-25
  */
-define('WEIBOFILE_VERSION', '12');
+define('WEIBOFILE_VERSION', '13');
 date_default_timezone_set('Asia/Shanghai');
 require __DIR__ . '/include/Sinaupload.php';
 include_once dirname(__FILE__) .'/include/saetv2.ex.class.php';
@@ -19,6 +20,8 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
     // 激活插件
     public static function activate(){
 		$db = Typecho_Db::get();
+		Helper::addPanel(3, 'WeiboFile/templates/manage_weibofile.php', '图床管理', 'WeiboFile微博图床', 'administrator');
+		Helper::addAction('manage_weibofile', 'WeiboFile_Plugin');
 		//图片
         Typecho_Plugin::factory('Widget_Upload')->uploadHandle = array('WeiboFile_Plugin', 'uploadHandle');
         Typecho_Plugin::factory('Widget_Upload')->modifyHandle = array('WeiboFile_Plugin', 'modifyHandle');
@@ -41,6 +44,8 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
     public static function deactivate(){
 		//删除页面模板
 		$db = Typecho_Db::get();
+		Helper::removeAction('manage_weibofile');
+		Helper::removePanel(3, 'WeiboFile/templates/manage_weibofile.php');
 		$queryTheme= $db->select('value')->from('table.options')->where('name = ?', 'theme'); 
 		$rowTheme = $db->fetchRow($queryTheme);
 		@unlink(dirname(__FILE__).'/../../themes/'.$rowTheme['value'].'/page_weibofile_videoupload.php');
@@ -141,17 +146,26 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		');
 		$headDiv->render();
 		
+		$isweibosync = new Typecho_Widget_Helper_Form_Element_Radio('isweibosync', array(
+            'y'=>_t('是'),
+            'n'=>_t('否')
+        ), 'n', _t('是否开启同步微博'), _t("发布文章同时同步到微博"));
+		$form->addInput($isweibosync->addRule('enum', _t(''), array('y', 'n')));
+		
 		$issavealbum = new Typecho_Widget_Helper_Form_Element_Radio('issavealbum', array(
             'y'=>_t('是'),
             'n'=>_t('否')
-        ), 'n', _t('是否保存到微博相册'), _t("默认不会保存到自己微博账号，保存到微博相册时如果频繁会禁用当前微博的接口，所以每次只能上传一张图片，<font color=red>且只能通过编辑器按钮上传，附件上传不会保存到微博相册</font>。"));
+        ), 'n', _t('是否保存到微博相册（需登陆微博同步账号，但无所依开启与否同步功能。）'), _t("默认不会保存到自己微博账号，保存到微博相册时如果频繁会禁用当前微博的接口，所以每次只能上传一张图片，<font color=red>且只能通过编辑器按钮上传，附件上传不会保存到微博相册</font>。"));
 		$form->addInput($issavealbum->addRule('enum', _t(''), array('y', 'n')));
 		
         $weibouser = new Typecho_Widget_Helper_Form_Element_Text('weibouser', null, '', _t('微博用户名(非新注册、非二维码登陆，且使用过一段时间的账号)'), _t('备注：设置后可多尝试多上传几次，上传成功尽量不要将此微博小号登录微博系的网站、软件，可以登录，但不确定会不会上传失败，上传失败了再重新上传2次同样可以正常上传，如果小号等级过低，可尝试微博大号，微博账号不能有手机验证权限，插件可正常使用，无需担心。'));
-        $form->addInput($weibouser->addRule('required', _t('微博小号用户名不能为空！')));
+        $form->addInput($weibouser);
 
         $weibopass = new Typecho_Widget_Helper_Form_Element_Password('weibopass', null, '', _t('微博密码'));
-        $form->addInput($weibopass->addRule('required', _t('微博小号密码不能为空！')));
+        $form->addInput($weibopass);
+		
+		$weiboprefix = new Typecho_Widget_Helper_Form_Element_Text('weiboprefix', array('value'), 'https://ws3.sinaimg.cn/large/', _t('图片链接前缀'), _t('微博图片链接前缀'));
+        $form->addInput($weiboprefix);
 		
 		$isuploadlocal = new Typecho_Widget_Helper_Form_Element_Radio('isuploadlocal', array(
             'y'=>_t('是'),
@@ -524,7 +538,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		if(strpos($path,"==")){
 			return Typecho_Common::url($content['attachment']->path.'', 'https://player.youku.com/embed/');
 		}else if(in_array($ext,array('gif','jpg','jpeg','png','bmp'))){
-			return Typecho_Common::url($content['attachment']->path.'.jpg', 'https://ws3.sinaimg.cn/large/');
+			return Typecho_Common::url($content['attachment']->path.'.jpg', $option->weiboprefix);
 		}else{
 			return Typecho_Common::url($content['attachment']->path, $plug_url.'/../..');
 		}
@@ -589,6 +603,8 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 	
 	/*微博同步*/
 	public static function weibosync($contents, $widget){
+		$option = self::getConfig();
+		if($option->isweibosync!="y"){return;}
 		$options = Typecho_Widget::widget('Widget_Options');
 		$config_weibooauth=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../plugins/WeiboFile/config/config_weibooauth.php'),'<?php die; ?>'));
 		$config_weibotoken=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../plugins/WeiboFile/config/config_weibotoken.php'),'<?php die; ?>'));

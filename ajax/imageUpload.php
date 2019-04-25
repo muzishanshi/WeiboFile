@@ -11,26 +11,58 @@ $plug_url = $options->pluginUrl;
 
 $action = isset($_POST['action']) ? addslashes($_POST['action']) : '';
 if($action=='imageUpload'){
-	if($option->weibouser==""||$option->weibopass==""){
-		$json=json_encode(array("status"=>"noset","msg"=>"站长暂无配置好此图床"));echo $json;exit;
+	if($option->issavealbum=="n"){
+		if($option->weibouser==""||$option->weibopass==""){
+			$json=json_encode(array("status"=>"noset","msg"=>"站长暂无配置好此图床"));echo $json;exit;
+		}
+		if($option->webimgupload!="y"){
+			$json=json_encode(array("status"=>"disable","msg"=>"站长已禁用此图床"));echo $json;exit;
+		}
+		$urls="";
+		$hrefs="";
+		$codes="";
+		for($i=0,$j=count($_FILES["webimgupload"]["name"]);$i<$j;$i++){
+			$Sinaupload=new Sinaupload('');
+			$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
+			$result=$Sinaupload->upload($_FILES['webimgupload']['tmp_name'][$i]);
+			$arr = json_decode($result,true);
+			$urls.=$option->weiboprefix.$arr['data']['pics']['pic_1']['pid'].".jpg<br />";
+			$hrefs.="<a style='text-decoration:none;' href='".$option->weiboprefix.$arr['data']['pics']['pic_1']['pid'].".jpg' target='_blank' title='".$_FILES['webimgupload']['name'][$i]."'>".$option->weiboprefix.$arr['data']['pics']['pic_1']['pid'].".jpg</a><br />";
+			$codes.="<a href='".$option->weiboprefix.$arr['data']['pics']['pic_1']['pid'].".jpg' target='_blank' title='".$_FILES['webimgupload']['name'][$i]."'><img src='".$option->weiboprefix.$arr['data']['pics']['pic_1']['pid'].".jpg' alt='".$_FILES['webimgupload']['name'][$i]."' /></a>\r\n";
+		}
+		$json=json_encode(array("status"=>"ok","msg"=>"上传结果","urls"=>$urls,"hrefs"=>$hrefs,"codes"=>$codes));
+		echo $json;
+	}else{
+		if(!class_exists('SaeTOAuthV2')&&!class_exists('SaeTClientV2')){
+			include_once dirname(__FILE__) .'/../include/saetv2.ex.class.php';
+		}
+		$config_weibooauth=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../../plugins/WeiboFile/config/config_weibooauth.php'),'<?php die; ?>'));
+		$config_weibotoken=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../../plugins/WeiboFile/config/config_weibotoken.php'),'<?php die; ?>'));
+		
+		$time=time();
+		$utfname=$time."_".$_FILES["webimgupload"]["name"][0];
+		$gbkname = iconv("utf-8", "gbk", $utfname);
+		move_uploaded_file($_FILES["webimgupload"]["tmp_name"][0], dirname(__FILE__).'/../uploadfile/'.$gbkname);
+		$img=$plug_url."/WeiboFile/uploadfile/".$utfname;
+		
+		/* 修改了下风格，并添加文章关键词作为微博话题，提高与其他相关微博的关联率 */
+		$string1 = '【'.$options->title.'】';
+		$string2 = '来源：'.$options->siteUrl;
+		/* 微博字数控制，避免超标同步失败 */
+		$postData = $string1.mb_strimwidth("贴图",0, 140,'...').$string2;
+		
+		$c = new SaeTClientV2( $config_weibooauth["weiboappkey"] , $config_weibooauth["weiboappsecret"] , $config_weibotoken["access_token"] );
+		$arr=$c->share($postData,$img);
+		unlink(dirname(__FILE__).'/../uploadfile/'.$gbkname);
+		
+		if(isset($arr['original_pic'])){
+			$urls=$arr["original_pic"];
+			$hrefs="<a style='text-decoration:none;' href='".$urls."' target='_blank' title='".$_FILES['webimgupload']['name'][0]."'>".$urls."</a>";
+			$codes="<a href='".$urls."' target='_blank' title='".$_FILES['webimgupload']['name'][0]."'><img src='".$urls."' alt='".$_FILES['webimgupload']['name'][0]."' /></a>";
+			$json=json_encode(array("status"=>"ok","msg"=>"上传结果","urls"=>$urls,"hrefs"=>$hrefs,"codes"=>$codes));
+			echo $json;
+		}
 	}
-	if($option->webimgupload!="y"){
-		$json=json_encode(array("status"=>"disable","msg"=>"站长已禁用此图床"));echo $json;exit;
-	}
-	$urls="";
-	$hrefs="";
-	$codes="";
-	for($i=0,$j=count($_FILES["webimgupload"]["name"]);$i<$j;$i++){
-		$Sinaupload=new Sinaupload('');
-		$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
-		$result=$Sinaupload->upload($_FILES['webimgupload']['tmp_name'][$i]);
-		$arr = json_decode($result,true);
-		$urls.="https://ws3.sinaimg.cn/large/".$arr['data']['pics']['pic_1']['pid'].".jpg<br />";
-		$hrefs.="<a style='text-decoration:none;' href='https://ws3.sinaimg.cn/large/".$arr['data']['pics']['pic_1']['pid'].".jpg' target='_blank' title='".$_FILES['webimgupload']['name'][$i]."'>https://ws3.sinaimg.cn/large/".$arr['data']['pics']['pic_1']['pid'].".jpg</a><br />";
-		$codes.="<a href='https://ws3.sinaimg.cn/large/".$arr['data']['pics']['pic_1']['pid'].".jpg' target='_blank' title='".$_FILES['webimgupload']['name'][$i]."'><img src='https://ws3.sinaimg.cn/large/".$arr['data']['pics']['pic_1']['pid'].".jpg' alt='".$_FILES['webimgupload']['name'][$i]."' /></a>\r\n";
-	}
-	$json=json_encode(array("status"=>"ok","msg"=>"上传结果","urls"=>$urls,"hrefs"=>$hrefs,"codes"=>$codes));
-	echo $json;
 	exit;
 }
 ?>

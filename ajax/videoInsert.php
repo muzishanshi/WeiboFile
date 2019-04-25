@@ -80,7 +80,7 @@ if($action=='uploadMovie'){
 			$result=$Sinaupload->upload($file['tmp_name'][$i]);
 			$arr = json_decode($result,true);
 			if(isset($arr['data']['pics']['pic_1']['pid'])){
-				$url='https://ws3.sinaimg.cn/large/' . $arr['data']['pics']['pic_1']['pid'] . '.jpg';
+				$url=$option->weiboprefix . $arr['data']['pics']['pic_1']['pid'] . '.jpg';
 				$text=array(
 					'name'  =>  $name,
 					'path'  =>  $url,
