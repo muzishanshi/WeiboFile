@@ -7,11 +7,11 @@
  * 5、新增远程图片、微博图片之间的转换及图片本地化等。
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.13
+ * @version 1.0.14
  * @link http://www.tongleer.com/
- * @date 2019-04-25
+ * @date 2019-04-26
  */
-define('WEIBOFILE_VERSION', '13');
+define('WEIBOFILE_VERSION', '14');
 date_default_timezone_set('Asia/Shanghai');
 require __DIR__ . '/include/Sinaupload.php';
 include_once dirname(__FILE__) .'/include/saetv2.ex.class.php';

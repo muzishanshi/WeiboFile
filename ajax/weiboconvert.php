@@ -22,35 +22,84 @@ if($action=='updateWBTCLinks'){
 	$query= $db->select()->from('table.contents')->where('cid = ?', $postid); 
 	$row = $db->fetchRow($query);
 	$post_content=$row["text"];
+	/*
 	if(strpos($post_content, '<!--markdown-->')===0){
 		$post_content=substr($post_content,15);
 	}
 	$post_content = Markdown::convert($post_content);
-	
+	*/
 	$weiboprefix=str_replace("/","\/",$option->weiboprefix);
 	$weiboprefix=str_replace(".","\.",$weiboprefix);
-	preg_match_all( "/<(img|IMG).*?src=[\'|\"](?!".$weiboprefix.")(.*?)[\'|\"].*?[\/]?>/", $post_content, $submatches );
 	
 	$savepath=dirname(__FILE__)."/x.jpg";
-	foreach($submatches[2] as $url){
-		$html = file_get_contents($url);
-		file_put_contents($savepath, $html);
-		$Sinaupload=new Sinaupload('');
-		$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
-		$result=$Sinaupload->upload($savepath);
-		$arr = json_decode($result,true);
-		if(isset($arr['data']['pics']['pic_1']['pid'])){
-			$imgurl="".$option->weiboprefix.$arr['data']['pics']['pic_1']['pid'].".jpg";
-			$post_content=str_replace($url,$imgurl,$post_content);
-			
-			if(strpos($url,$options ->siteUrl)!== false){
-				$path=str_replace($options ->siteUrl,"",$url);
-				$oldpath=__TYPECHO_ROOT_DIR__.__TYPECHO_PLUGIN_DIR__."/../..".$path;
-				@unlink($oldpath);
+	
+	preg_match_all( "/<(img|IMG).*?src=[\'|\"](?!".$weiboprefix.")(.*?)[\'|\"].*?[\/]?>/", $post_content, $submatches );
+	if(isset($submatches[2])){
+		foreach($submatches[2] as $url){
+			$html = file_get_contents($url);
+			file_put_contents($savepath, $html);
+			$Sinaupload=new Sinaupload('');
+			$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
+			$result=$Sinaupload->upload($savepath);
+			$arr = json_decode($result,true);
+			if(isset($arr['data']['pics']['pic_1']['pid'])){
+				$imgurl="".$option->weiboprefix.$arr['data']['pics']['pic_1']['pid'].".jpg";
+				$post_content=str_replace($url,$imgurl,$post_content);
+				
+				if(strpos($url,$options ->siteUrl)!== false){
+					$path=str_replace($options ->siteUrl,"",$url);
+					$oldpath=__TYPECHO_ROOT_DIR__.__TYPECHO_PLUGIN_DIR__."/../../".$path;
+					@unlink($oldpath);
+				}
 			}
 		}
 	}
-	$updateItem = $db->update('table.contents')->rows(array('text'=>"<!--markdown-->!!!\r\n".$post_content."\r\n!!!"))->where('cid=?',$postid);
+	
+	preg_match_all( "/\!\[.*\]\((?!".$weiboprefix.")((.*?)((.gif)|(.jpg)|(.bmp)|(.png)|(.GIF)|(.JPG)|(.PNG)|(.BMP)))\)/", $post_content, $submatches );
+	if(isset($submatches[1])){
+		foreach($submatches[1] as $url){
+			$html = file_get_contents($url);
+			file_put_contents($savepath, $html);
+			$Sinaupload=new Sinaupload('');
+			$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
+			$result=$Sinaupload->upload($savepath);
+			$arr = json_decode($result,true);
+			if(isset($arr['data']['pics']['pic_1']['pid'])){
+				$imgurl="".$option->weiboprefix.$arr['data']['pics']['pic_1']['pid'].".jpg";
+				$post_content=str_replace($url,$imgurl,$post_content);
+				
+				if(strpos($url,$options ->siteUrl)!== false){
+					$path=str_replace($options ->siteUrl,"",$url);
+					$oldpath=__TYPECHO_ROOT_DIR__.__TYPECHO_PLUGIN_DIR__."/../../".$path;
+					@unlink($oldpath);
+				}
+			}
+		}
+	}
+	
+	preg_match_all( "/\[\d\]:\s(?!".$weiboprefix.")((.*?)((.gif)|(.jpg)|(.bmp)|(.png)|(.GIF)|(.JPG)|(.PNG)|(.BMP)))\n?/", $post_content, $submatches );
+	if(isset($submatches[1])){
+		foreach($submatches[1] as $url){
+			$html = file_get_contents($url);
+			file_put_contents($savepath, $html);
+			$Sinaupload=new Sinaupload('');
+			$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
+			$result=$Sinaupload->upload($savepath);
+			$arr = json_decode($result,true);
+			if(isset($arr['data']['pics']['pic_1']['pid'])){
+				$imgurl="".$option->weiboprefix.$arr['data']['pics']['pic_1']['pid'].".jpg";
+				$post_content=str_replace($url,$imgurl,$post_content);
+				
+				if(strpos($url,$options ->siteUrl)!== false){
+					$path=str_replace($options ->siteUrl,"",$url);
+					$oldpath=__TYPECHO_ROOT_DIR__.__TYPECHO_PLUGIN_DIR__."/../../".$path;
+					@unlink($oldpath);
+				}
+			}
+		}
+	}
+	
+	$updateItem = $db->update('table.contents')->rows(array('text'=>$post_content))->where('cid=?',$postid);
 	$updateItemRows= $db->query($updateItem);
 	@unlink($savepath);
 	$json=json_encode(array("status"=>"ok","msg"=>"转换成功"));
@@ -67,22 +116,44 @@ if($action=='updateWBTCLinks'){
 	$query= $db->select()->from('table.contents')->where('cid = ?', $postid); 
 	$row = $db->fetchRow($query);
 	$post_content=$row["text"];
-	if(strpos($post_content, '<!--markdown-->')===0){
-		$post_content=substr($post_content,15);
-	}
-	$post_content = Markdown::convert($post_content);
+	
 	$siteUrl=str_replace("/","\/",$options ->siteUrl);
 	$siteUrl=str_replace(".","\.",$siteUrl);
-	preg_match_all( "/<(img|IMG).*?src=[\'|\"](?!".$siteUrl.")(.*?)[\'|\"].*?[\/]?>/", $post_content, $localmatches );
 	
-	foreach($localmatches[2] as $url){
-		$uploadfile=time().basename($url);
-		$html = file_get_contents($url);
-		file_put_contents(dirname(__FILE__)."/../../../uploads/".$uploaddir.$uploadfile, $html);
-		$imgurl=$options ->siteUrl."usr/uploads/".$uploaddir.$uploadfile;
-		$post_content=str_replace($url,$imgurl,$post_content);
+	preg_match_all( "/<(img|IMG).*?src=[\'|\"](?!".$siteUrl.")(.*?)[\'|\"].*?[\/]?>/", $post_content, $localmatches );
+	if(isset($localmatches[2])){
+		foreach($localmatches[2] as $url){
+			$uploadfile=time().basename($url);
+			$html = file_get_contents($url);
+			file_put_contents(dirname(__FILE__)."/../../../uploads/".$uploaddir.$uploadfile, $html);
+			$imgurl=$options ->siteUrl."usr/uploads/".$uploaddir.$uploadfile;
+			$post_content=str_replace($url,$imgurl,$post_content);
+		}
 	}
-	$updateItem = $db->update('table.contents')->rows(array('text'=>"<!--markdown-->!!!\r\n".$post_content."\r\n!!!"))->where('cid=?',$postid);
+	
+	preg_match_all( "/\!\[.*\]\((?!".$siteUrl.")((.*?)((.gif)|(.jpg)|(.bmp)|(.png)|(.GIF)|(.JPG)|(.PNG)|(.BMP)))\)/", $post_content, $localmatches );
+	if(isset($localmatches[1])){
+		foreach($localmatches[1] as $url){
+			$uploadfile=time().basename($url);
+			$html = file_get_contents($url);
+			file_put_contents(dirname(__FILE__)."/../../../uploads/".$uploaddir.$uploadfile, $html);
+			$imgurl=$options ->siteUrl."usr/uploads/".$uploaddir.$uploadfile;
+			$post_content=str_replace($url,$imgurl,$post_content);
+		}
+	}
+	
+	preg_match_all( "/\[\d\]:\s(?!".$siteUrl.")((.*?)((.gif)|(.jpg)|(.bmp)|(.png)|(.GIF)|(.JPG)|(.PNG)|(.BMP)))\n?/", $post_content, $localmatches );
+	if(isset($localmatches[1])){
+		foreach($localmatches[1] as $url){
+			$uploadfile=time().basename($url);
+			$html = file_get_contents($url);
+			file_put_contents(dirname(__FILE__)."/../../../uploads/".$uploaddir.$uploadfile, $html);
+			$imgurl=$options ->siteUrl."usr/uploads/".$uploaddir.$uploadfile;
+			$post_content=str_replace($url,$imgurl,$post_content);
+		}
+	}
+	
+	$updateItem = $db->update('table.contents')->rows(array('text'=>$post_content))->where('cid=?',$postid);
 	$updateItemRows= $db->query($updateItem);
 	$json=json_encode(array("status"=>"ok","msg"=>"本地化成功"));
 	echo $json;
