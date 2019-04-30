@@ -123,7 +123,11 @@ if($action=='updateWBTCLinks'){
 	preg_match_all( "/<(img|IMG).*?src=[\'|\"](?!".$siteUrl.")(.*?)[\'|\"].*?[\/]?>/", $post_content, $localmatches );
 	if(isset($localmatches[2])){
 		foreach($localmatches[2] as $url){
-			$uploadfile=time().basename($url).".jpg";
+			$basename=basename($url);
+			if(strpos($basename,"?")!== false){
+				$basename=explode("?",$basename)[0];
+			}
+			$uploadfile=time().$basename.".png";
 			$html = file_get_contents($url);
 			file_put_contents(dirname(__FILE__)."/../../../uploads/".$uploaddir.$uploadfile, $html);
 			$imgurl=$options ->siteUrl."usr/uploads/".$uploaddir.$uploadfile;
@@ -134,7 +138,11 @@ if($action=='updateWBTCLinks'){
 	preg_match_all( "/\!\[.*\]\((?!".$siteUrl.")((.*?)((.gif)|(.jpg)|(.bmp)|(.png)|(.GIF)|(.JPG)|(.PNG)|(.BMP)))\)/", $post_content, $localmatches );
 	if(isset($localmatches[1])){
 		foreach($localmatches[1] as $url){
-			$uploadfile=time().basename($url).".jpg";
+			$basename=basename($url);
+			if(strpos($basename,"?")!== false){
+				$basename=explode("?",$basename)[0];
+			}
+			$uploadfile=time().$basename.".png";
 			$html = file_get_contents($url);
 			file_put_contents(dirname(__FILE__)."/../../../uploads/".$uploaddir.$uploadfile, $html);
 			$imgurl=$options ->siteUrl."usr/uploads/".$uploaddir.$uploadfile;
@@ -145,7 +153,11 @@ if($action=='updateWBTCLinks'){
 	preg_match_all( "/\[\d\]:\s(?!".$siteUrl.")((.*?)((.gif)|(.jpg)|(.bmp)|(.png)|(.GIF)|(.JPG)|(.PNG)|(.BMP)))\n?/", $post_content, $localmatches );
 	if(isset($localmatches[1])){
 		foreach($localmatches[1] as $url){
-			$uploadfile=time().basename($url).".jpg";
+			$basename=basename($url);
+			if(strpos($basename,"?")!== false){
+				$basename=explode("?",$basename)[0];
+			}
+			$uploadfile=time().$basename.".png";
 			$html = file_get_contents($url);
 			file_put_contents(dirname(__FILE__)."/../../../uploads/".$uploaddir.$uploadfile, $html);
 			$imgurl=$options ->siteUrl."usr/uploads/".$uploaddir.$uploadfile;
