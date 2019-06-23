@@ -17,7 +17,7 @@ if(strpos($this->permalink,'?')){
 	$url=$this->permalink;
 }
 $isMultiple="multiple";
-if($option->issavealbum=="y"){
+if($option->issavealbum=="y"||$option->albumtype=="ali"){
 	$isMultiple="";
 }
 try{

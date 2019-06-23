@@ -1,6 +1,6 @@
-<img src="https://ws3.sinaimg.cn/large/ecabade5ly1fqwuz2k658j20le05nt8i" alt="Typecho-WeiboFile新浪微博图片上传插件" />
+<img src="https://ws3.sinaimg.cn/large/ecabade5ly1fqwuz2k658j20le05nt8i" alt="Typecho-WeiboFile阿里新浪微博图片上传插件" />
 
-### WeiboFileForTypecho新浪微博图床、微博同步、优酷视频上传三合一一体插件
+### WeiboFileForTypecho阿里图床、新浪微博图床、微博同步、优酷视频上传三合一一体插件
 
 ---
 
@@ -11,6 +11,8 @@
 3、新增前台微博图床上传。
 
 4、新增微博同步和上传微博相册图床。
+
+5、新增阿里图床
 
 程序有可能会遇到bug不改版本号直接修改代码的时候，所以扫描以下二维码关注公众号“同乐儿”，可直接与作者二呆产生联系，不再为bug烦恼，随时随地解决问题。
 
@@ -35,6 +37,10 @@
 	1元入群：http://joke.tongleer.com/327.html
 
 #### 更新记录：
+2019-06-23 1.0.15
+
+	新增阿里图床
+
 2019-04-25 1.0.14
 
 	优化远程链接与本地链接转换的方式

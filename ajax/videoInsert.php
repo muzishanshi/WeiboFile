@@ -72,21 +72,49 @@ if($action=='uploadMovie'){
 		}
 		
 		if($option->issavealbum=="n"){
-			if(!class_exists('Sinaupload')){
-				require_once dirname(__FILE__) . '/../include/Sinaupload.php';
+			if($option->albumtype=="weibo"){
+				if(!class_exists('Sinaupload')){
+					require_once dirname(__FILE__) . '/../include/Sinaupload.php';
+				}
+				$Sinaupload=new Sinaupload('');
+				$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
+				$result=$Sinaupload->upload($file['tmp_name'][$i]);
+				$arr = json_decode($result,true);
+				$picname=$arr['data']['pics']['pic_1']['pid'];
+				$url=$option->weiboprefix . $picname . '.jpg';
+			}else if($option->albumtype=="ali"){
+				if(@$file['size'][$i]<=1024*1024*3){
+					$tempfilename = iconv("utf-8", "gbk", @$file['name'][$i]);
+					move_uploaded_file(@$file['tmp_name'][$i], dirname(__FILE__).'/../uploadfile/'.$tempfilename);
+					$ch = curl_init();
+					$filePath = dirname(__FILE__).'/../uploadfile/'.$tempfilename;
+					$data = array('file' => "multipart", 'Filedata' => '@' . $filePath);
+					if (class_exists('\CURLFile')) {
+						$data['Filedata'] = new \CURLFile(realpath($filePath));
+					} else {
+						if (defined('CURLOPT_SAFE_UPLOAD')) {
+							curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
+						}
+					}
+					curl_setopt($ch, CURLOPT_URL, 'https://api.uomg.com/api/image.ali');
+					curl_setopt($ch, CURLOPT_POST, 1);
+					curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					$json=curl_exec($ch);
+					curl_close($ch);
+					@unlink(dirname(__FILE__).'/../uploadfile/'.$tempfilename);
+					$arr=json_decode($json,true);
+					$picname=$arr['data']['fs_url'];
+					$url=$option->aliprefix . $picname;
+				}
 			}
-			$Sinaupload=new Sinaupload('');
-			$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
-			$result=$Sinaupload->upload($file['tmp_name'][$i]);
-			$arr = json_decode($result,true);
-			if(isset($arr['data']['pics']['pic_1']['pid'])){
-				$url=$option->weiboprefix . $arr['data']['pics']['pic_1']['pid'] . '.jpg';
+			if(isset($picname)){
 				$text=array(
 					'name'  =>  $name,
 					'path'  =>  $url,
 					'size'  =>  $file['size'][$i],
 					'type'  =>  $ext,
-					'mime'  =>  Typecho_Common::mimeContentType($file['tmp_name'][$i])
+					'mime'  =>  "image/jpeg"
 				);
 				$insertData = array(
 					'title'   =>  $name,
