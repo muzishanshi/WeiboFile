@@ -9,11 +9,11 @@
  * 6、新增阿里图床等。
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.15
+ * @version 1.0.16
  * @link http://www.tongleer.com/
- * @date 2019-06-23
+ * @date 2019-07-30
  */
-define('WEIBOFILE_VERSION', '15');
+define('WEIBOFILE_VERSION', '16');
 date_default_timezone_set('Asia/Shanghai');
 require __DIR__ . '/include/Sinaupload.php';
 include_once dirname(__FILE__) .'/include/saetv2.ex.class.php';
@@ -538,14 +538,14 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 			$dirtime=date("Y")."/".date("m").'/';
 			$dir=__TYPECHO_ROOT_DIR__ . "/usr/uploads/".$dirtime."/";
 			if(!file_exists($dir)){
-				mkdir($dir);
+				mkdir($dir,0777,true);
 			}
-			$dirupload="/usr/uploads/".$dirtime."/";
-			$pathgbk = iconv("utf-8", "gbk", $dir.$file['name']);
-			move_uploaded_file($file['tmp_name'], $pathgbk);
+			$dirupload="/usr/uploads/".$dirtime;
+			$newname=time().".".end(explode(".",$file['name']));
+			move_uploaded_file($file['tmp_name'], $dir.$newname);
 			return array(
-				'name'  =>  $file['name'],
-				'path'  =>  $dirupload.$file['name'],
+				'name'  =>  $newname,
+				'path'  =>  $dirupload.$newname,
 				'size'  =>  $file['size'],
 				'type'  =>  $ext,
 				'mime'  =>  "video/*"
