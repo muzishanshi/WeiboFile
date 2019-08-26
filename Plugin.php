@@ -1,19 +1,17 @@
 <?php
 /**
- * <a href="http://club.tongleer.com" style="background: #000;padding: 2px 4px;color: #ffeb00;font-size: 12px;" target="_blank">反馈</a><br />
  * 1、将 Typecho 的附件上传至新浪微博云存储中，无需申请appid，不占用服务器大小，可永久保存，只需一个不会登录的微博小号即可；<br />
  * 2、在图床的基础上新增上传视频和视频解析的功能；<br />
  * 3、新增前台微博图床上传；<br />
  * 4、新增微博同步和上传微博相册图床。<br />
  * 5、新增远程图片、微博图片之间的转换及图片本地化。
- * 6、新增阿里图床等。
+ * 6、新增阿里图床等。<div class="WeiboFileSet"><br /><a href="javascript:;" title="插件因兴趣于闲暇时间所写，故会有代码不规范、不专业和bug的情况，但完美主义促使代码还说得过去，如有bug或使用问题进行反馈即可。">鼠标轻触查看备注</a>&nbsp;<a href="http://club.tongleer.com" target="_blank">论坛</a>&nbsp;<a href="https://www.tongleer.com/api/web/pay.png" target="_blank">打赏</a>&nbsp;<a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=diamond0422@qq.com" target="_blank">反馈</a></div><style>.WeiboFileSet a{background: #4DABFF;padding: 5px;color: #fff;}</style>
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.16
+ * @version 1.0.16<br /><span id="WeiboFileUpdateInfo"></span><script>WeiboFileXmlHttp=new XMLHttpRequest();WeiboFileXmlHttp.open("GET","https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=16",true);WeiboFileXmlHttp.send(null);WeiboFileXmlHttp.onreadystatechange=function () {if (WeiboFileXmlHttp.readyState ==4 && WeiboFileXmlHttp.status ==200){document.getElementById("WeiboFileUpdateInfo").innerHTML=WeiboFileXmlHttp.responseText;}}</script>
  * @link http://www.tongleer.com/
  * @date 2019-07-30
  */
-define('WEIBOFILE_VERSION', '16');
 date_default_timezone_set('Asia/Shanghai');
 require __DIR__ . '/include/Sinaupload.php';
 include_once dirname(__FILE__) .'/include/saetv2.ex.class.php';
@@ -53,6 +51,16 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		@unlink(dirname(__FILE__).'/../../themes/'.$rowTheme['value'].'/page_weibofile_videoupload.php');
 		@unlink(dirname(__FILE__).'/../../themes/'.$rowTheme['value'].'/page_weibofile_webimgupload.php');
         return _t('插件已被禁用');
+    }
+	
+	private static function Judge_database(){
+        $db= Typecho_Db::get();
+        $getAdapterName = $db->getAdapterName();
+        if(preg_match('/^M|m?ysql$/',$getAdapterName)){
+            return true;
+        }else{
+            throw new Typecho_Plugin_Exception(_t('对不起，使用了不支持的数据库，无法使用此功能，仅支持mysql数据库。'));
+        }
     }
 	
 	public static function videoList(){
@@ -107,7 +115,6 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		$headDiv=new Typecho_Widget_Helper_Layout();
 		$headDiv->html('
 			<script src="https://apps.bdimg.com/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-			<small>版本检查：<span id="versionCode"></span></small>
 			<h2>微博同步相关配置</h2>
 			<p>App Key：&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="weiboappkey" value="'.$config_weibooauth["weiboappkey"].'" placeholder="填写完成点击微博登陆" /></p>
 			<p>App Secret：<input type="text" id="weiboappsecret" value="'.$config_weibooauth["weiboappsecret"].'" placeholder="填写完成点击微博登陆" /></p>
@@ -116,9 +123,6 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 			<p>'.$weiboflag.'</p>
 			<script>
 				$(function(){
-					$.post("'.$plug_url.'/WeiboFile/ajax/update.php",{version:'.WEIBOFILE_VERSION.'},function(data){
-						$("#versionCode").html(data);
-					});
 					$("#weibooauth").click(function(){
 						if($("#weiboappkey").val()==""||$("#weiboappsecret").val()==""){
 							alert("请填写AppKey和AppSecret");
@@ -317,6 +321,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 	public static function moduleVideoUpload($db,$videoupload){
 		switch($videoupload){
 			case 'y':
+				WeiboFile_Plugin::Judge_database();
 				//创建视频上传所用数据表
 				self::createTableVideoUpload($db);
 				//判断目录权限，并将插件文件写入主题目录
