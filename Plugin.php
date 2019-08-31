@@ -3,7 +3,7 @@
  * WeiboFile插件源于新浪图床(已使用微博官方api实现)，而后扩展了阿里图床、新浪同步等功能，因技术有限，若存在bug欢迎邮件反馈，方能逐步升级。<div class="WeiboFileSet"><br /><a href="javascript:;" title="插件因兴趣于闲暇时间所写，故会有代码不规范、不专业和bug的情况，但完美主义促使代码还说得过去，如有bug或使用问题进行反馈即可。">鼠标轻触查看备注</a>&nbsp;<a href="http://club.tongleer.com" target="_blank">论坛</a>&nbsp;<a href="https://www.tongleer.com/api/web/pay.png" target="_blank">打赏</a>&nbsp;<a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=diamond0422@qq.com" target="_blank">反馈</a></div><style>.WeiboFileSet a{background: #4DABFF;padding: 5px;color: #fff;}</style>
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.17<br /><span id="WeiboFileUpdateInfo"></span><script>WeiboFileXmlHttp=new XMLHttpRequest();WeiboFileXmlHttp.open("GET","https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=16",true);WeiboFileXmlHttp.send(null);WeiboFileXmlHttp.onreadystatechange=function () {if (WeiboFileXmlHttp.readyState ==4 && WeiboFileXmlHttp.status ==200){document.getElementById("WeiboFileUpdateInfo").innerHTML=WeiboFileXmlHttp.responseText;}}</script>
+ * @version 1.0.17<br /><span id="WeiboFileUpdateInfo"></span><script>WeiboFileXmlHttp=new XMLHttpRequest();WeiboFileXmlHttp.open("GET","https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=17",true);WeiboFileXmlHttp.send(null);WeiboFileXmlHttp.onreadystatechange=function () {if (WeiboFileXmlHttp.readyState ==4 && WeiboFileXmlHttp.status ==200){document.getElementById("WeiboFileUpdateInfo").innerHTML=WeiboFileXmlHttp.responseText;}}</script>
  * @link http://www.tongleer.com/
  * @date 2019-08-31
  */
