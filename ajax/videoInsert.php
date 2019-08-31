@@ -8,6 +8,7 @@ ini_set('upload_max_filesize','1024M');
 ini_set('post_max_size','1024M');
 set_time_limit(0);
 
+$time=time();
 $action = isset($_POST['action']) ? addslashes($_POST['action']) : '';
 if($action=='uploadMovie'){
 	$uid = isset($_GET['uid']) ? addslashes($_GET['uid']) : '';
@@ -40,7 +41,7 @@ if($action=='uploadMovie'){
 			'videoupuid'   =>  $uid,
 			'videoupurl'     =>  'https://player.youku.com/embed/'.$arr['video_id'],
 			'videouppic'     =>  '',
-			'videoupinstime'     =>  date('Y-m-d H:i:s',time()),
+			'videoupinstime'     =>  date('Y-m-d H:i:s',$time),
 			'videouptype'     =>  'youku'
 		);
 		$insert = $db->insert('table.weibofile_videoupload')->rows($insertData);
@@ -120,8 +121,8 @@ if($action=='uploadMovie'){
 					'title'   =>  $name,
 					'slug'   =>  $name,
 					'parent'   =>  $cid,
-					'created'     =>  time(),
-					'modified'     =>  time(),
+					'created'     =>  $time,
+					'modified'     =>  $time,
 					'text'     =>  serialize($text),
 					'authorId'     =>  $uid,
 					'type'     =>  'attachment',
@@ -143,7 +144,6 @@ if($action=='uploadMovie'){
 			$config_weibooauth=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../../plugins/WeiboFile/config/config_weibooauth.php'),'<?php die; ?>'));
 			$config_weibotoken=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../../plugins/WeiboFile/config/config_weibotoken.php'),'<?php die; ?>'));
 			
-			$time=time();
 			$utfname=$time."_".$name;
 			$gbkname = iconv("utf-8", "gbk", $utfname);
 			move_uploaded_file($filename, dirname(__FILE__).'/../uploadfile/'.$gbkname);
@@ -172,8 +172,8 @@ if($action=='uploadMovie'){
 					'title'   =>  $name,
 					'slug'   =>  $name,
 					'parent'   =>  $cid,
-					'created'     =>  time(),
-					'modified'     =>  time(),
+					'created'     =>  $time,
+					'modified'     =>  $time,
 					'text'     =>  serialize($text),
 					'authorId'     =>  $uid,
 					'type'     =>  'attachment',

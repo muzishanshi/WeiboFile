@@ -30,7 +30,7 @@ try{
 	 	});
 		$(document).on('click', '#wmd-button-weiboimg', function(){
 	 		$(this).after(
-	 			'<div class="wmd-prompt-dialog"><div><p><b>微博图床</b></p><p>如果勾选了保存到微博相册，则每次只能上传一张图片；因虚拟主机权限问题可能会上传失败。</p></div><form enctype="multipart/form-data"><input type="file" name="img_file" id="img_file" accept="image/*" multiple><br /><br /><button id="uploadImgBtn" type="button" class="btn-s primary" onclick="startWeiboImgUpload(this);">上传微博图床并插入</button><button type="button" class="btn-s" onclick="cancelAlert();">取消</button><br /><br /><div id="img_upload_msg"></div><br /></form><div><p><b>阿里图床</b></p><p>暂时最大支持3M图片，增加大小可手动修改ajax/videoInsert.php中86行代码。</p></div><form enctype="multipart/form-data"><input type="file" name="ali_img_file" id="ali_img_file" accept="image/*" multiple><br /><br /><button id="ali_uploadImgBtn" type="button" class="btn-s primary" onclick="startAliImgUpload(this);">上传阿里图床并插入</button><button type="button" class="btn-s" onclick="cancelAlert();">取消</button><br /><br /><div id="ali_img_upload_msg"></div><br /></form></div>');
+	 			'<div class="wmd-prompt-dialog"><div><p><b>图床</b></p><p>微博图床一次只能上传一张图片，阿里图床暂时最大支持3M图片，增加大小可手动修改ajax/videoInsert.php中86行代码。</p></div><form enctype="multipart/form-data"><input type="file" name="img_file" id="img_file" accept="image/*" multiple><br /><br /><button id="uploadImgBtn" type="button" class="btn-s primary" onclick="startImgUpload(this);">上传并插入</button><button type="button" class="btn-s" onclick="cancelAlert();">取消</button><br /><br /><div id="img_upload_msg"></div><br /></form></div>');
 
 	 	});
 
@@ -135,7 +135,7 @@ try{
         return false;            
     }
 
-	function startWeiboImgUpload(e){
+	function startImgUpload(e){
 		if($('#img_upload_msg').html()=='<font color="green">上传中，请稍后……</font>'){
 			alert('上传中，请稍后……');
 			return;
@@ -179,56 +179,6 @@ try{
 				$('#img_upload_msg').html('<font color="red">&nbsp;</font>');
 			}
 			data.append('imgFile['+i+']', img_file.files[i]);
-		}
-		data.append('cid',$("#cid").val());
-		data.append('action','uploadImg');
-		xhr.send(data);
-	}
-	
-	function startAliImgUpload(e){
-		if($('#ali_img_upload_msg').html()=='<font color="green">上传中，请稍后……</font>'){
-			alert('上传中，请稍后……');
-			return;
-		}
-		var ali_img_file = document.getElementById('ali_img_file');
-		if(ali_img_file.files.length==0){
-			$('#ali_img_upload_msg').html('<font color="red">请选择一个图片</font>');
-			return;
-		}
-		var xhr=new XMLHttpRequest();
-		xhr.open('POST','<?php echo $ajaxurl.'?uid='.$uid;?>',true);
-		xhr.upload.onprogress=function(e){
-			$('#ali_img_upload_msg').html('<font color="green">上传中，请稍后……</font>');
-		}
-		xhr.onerror=function(e){
-			$('#ali_img_upload_msg').html('<font color="red">上传错误</font>');
-			return;
-		}
-		xhr.onreadystatechange=function(e){
-			if(xhr.readyState===4 && xhr.status===200){
-				var data=JSON.parse(xhr.responseText);
-				$.each(data,function(index,array) {
-					var html='';
-					if(array.code==100){
-						html='\r\n!['+array.name+'][1]\r\n\r\n\r\n  [1]: '+array.url;
-					}else{
-						html='\r\n!['+array.name+'][1]上传失败';
-					}
-					$("#text").append(html);
-				});
-				$('#ali_img_upload_msg').html('<font color="green">上传完成</font>');
-				$('#ali_uploadImgBtn').css('display','none');
-			}
-		}
-		var data=new FormData();
-		for (var i=0;i<ali_img_file.files.length;i++){
-			if(ali_img_file.files[i] && ali_img_file.files[i].type.indexOf('image') === -1){
-				$('#ali_img_upload_msg').html('<font color="red">格式不正确</font>');
-				return;
-			}else{
-				$('#ali_img_upload_msg').html('<font color="red">&nbsp;</font>');
-			}
-			data.append('imgFile['+i+']', ali_img_file.files[i]);
 		}
 		data.append('cid',$("#cid").val());
 		data.append('action','uploadImg');

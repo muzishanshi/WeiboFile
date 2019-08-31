@@ -10,7 +10,76 @@ $option=$options->plugin('WeiboFile');
 $plug_url = $options->pluginUrl;
 
 $action = isset($_POST['action']) ? addslashes($_POST['action']) : '';
-if($action=='updateWBTCLinks'){
+if($action=='updateALTCLinks'){
+	/*转换阿里图床链接（未完成）*/
+	$postid = isset($_POST['postid']) ? addslashes($_POST['postid']) : '';
+	
+	$query= $db->select()->from('table.contents')->where('cid = ?', $postid); 
+	$row = $db->fetchRow($query);
+	$post_content=$row["text"];
+	
+	$aliprefix=str_replace("/","\/",$option->aliprefix);
+	$aliprefix=str_replace(".","\.",$aliprefix);
+	
+	preg_match_all( "/\!\[.*\]\((?!".$aliprefix.")((.*?)((.gif)|(.jpg)|(.bmp)|(.png)|(.GIF)|(.JPG)|(.PNG)|(.BMP)))\)/", $post_content, $submatches );
+	if(isset($submatches[1])){
+		foreach($submatches[1] as $url){
+			$httpData=array("action"=>"weiboimg","imgurl"=>$url);
+			$arr = WeiboFile_Plugin::httpClient("https://www.tongleer.com/api/web/",$httpData);
+			if(isset($arr['data']['src'])){
+				$imgurl="".$option->weiboprefix.$arr['data']['pics']['pic_1']['pid'].".jpg";
+				$post_content=str_replace($url,$imgurl,$post_content);
+				
+				if(strpos($url,$options->siteUrl)!== false){
+					$path=str_replace($options->siteUrl,"",$url);
+					$oldpath=$plug_url."/../..".$path;
+					@unlink($oldpath);
+				}
+			}
+		}
+	}
+	
+	preg_match_all( "/\[\d\]:\s(?!".$aliprefix.")((.*?)((.gif)|(.jpg)|(.bmp)|(.png)|(.GIF)|(.JPG)|(.PNG)|(.BMP)))\n?/", $post_content, $submatches );
+	if(isset($submatches[1])){
+		foreach($submatches[1] as $url){
+			$httpData=array("action"=>"weiboimg","imgurl"=>$url);
+			$arr = WeiboFile_Plugin::httpClient("https://www.tongleer.com/api/web/",$httpData);
+			if(isset($arr['data']['src'])){
+				$imgurl=$option->aliprefix.basename($arr['data']["src"]);
+				$post_content=str_replace($url,$imgurl,$post_content);
+				
+				if(strpos($url,$options->siteUrl)!== false){
+					$path=str_replace($options->siteUrl,"",$url);
+					$oldpath=$plug_url."/../..".$path;
+					@unlink($oldpath);
+				}
+			}
+		}
+	}
+	
+	preg_match_all( "/<(img|IMG).*?src=[\'|\"](?!".$aliprefix.")(.*?)[\'|\"].*?[\/]?>/", $post_content, $submatches );
+	if(isset($submatches[2])){
+		foreach($submatches[2] as $url){
+			$httpData=array("action"=>"weiboimg","imgurl"=>$url);
+			$arr = WeiboFile_Plugin::httpClient("https://www.tongleer.com/api/web/",$httpData);
+			if(isset($arr['data']["src"])){
+				$imgurl=$option->aliprefix.basename($arr['data']["src"]);
+				$post_content=str_replace($url,$imgurl,$post_content);
+				
+				if(strpos($url,$options->siteUrl)!== false){
+					$path=str_replace($options->siteUrl,"",$url);
+					$oldpath=$plug_url."/../..".$path;
+					@unlink($oldpath);
+				}
+			}
+		}
+	}
+	
+	$updateItem = $db->update('table.contents')->rows(array('text'=>$post_content))->where('cid=?',$postid);
+	$updateItemRows= $db->query($updateItem);
+	$json=json_encode(array("status"=>"ok","msg"=>"转换成功"));
+	echo $json;
+}else if($action=='updateWBTCLinks'){
 	/*转换微博图床链接*/
 	if(!isset($option->weibouser) || !isset($option->weibopass)){
 		$json=json_encode(array("status"=>"noneconfig","msg"=>"请先配置微博小号"));
@@ -104,8 +173,9 @@ if($action=='updateWBTCLinks'){
 	@unlink($savepath);
 	$json=json_encode(array("status"=>"ok","msg"=>"转换成功"));
 	echo $json;
-}else{
+}else if($action=="localWBTCLinks"){
 	/*本地化微博图床链接*/
+	$time=time();
 	$uploaddir=date("Y")."/".date("m")."/";
 	if(!is_dir(dirname(__FILE__)."/../../../uploads/".$uploaddir)){
 		mkdir (dirname(__FILE__)."/../../../uploads/".$uploaddir, 0777, true );
@@ -127,11 +197,34 @@ if($action=='updateWBTCLinks'){
 			if(strpos($basename,"?")!== false){
 				$basename=explode("?",$basename)[0];
 			}
-			$uploadfile=time().$basename.".png";
+			$uploadfile=$time.$basename.".png";
 			$html = file_get_contents($url);
 			file_put_contents(dirname(__FILE__)."/../../../uploads/".$uploaddir.$uploadfile, $html);
 			$imgurl=$options ->siteUrl."usr/uploads/".$uploaddir.$uploadfile;
 			$post_content=str_replace($url,$imgurl,$post_content);
+			
+			$text=array(
+				'name'  =>  $uploadfile,
+				'path'  =>  str_replace($options->siteUrl,"",$imgurl),
+				'size'  =>  0,
+				'type'  =>  "png",
+				'mime'  =>  "image/png"
+			);
+			$insertData = array(
+				'title'   =>  $uploadfile,
+				'slug'   =>  $uploadfile,
+				'parent'   =>  $postid,
+				'created'     =>  $time,
+				'modified'     =>  $time,
+				'text'     =>  serialize($text),
+				'authorId'     =>  $row["authorId"],
+				'type'     =>  'attachment',
+				'status'     =>  'publish',
+				'allowComment'     =>  '1',
+				'allowFeed'     =>  '1'
+			);
+			$insert = $db->insert('table.contents')->rows($insertData);
+			$insertId = $db->query($insert);
 		}
 	}
 	
@@ -142,11 +235,34 @@ if($action=='updateWBTCLinks'){
 			if(strpos($basename,"?")!== false){
 				$basename=explode("?",$basename)[0];
 			}
-			$uploadfile=time().$basename.".png";
+			$uploadfile=$time.$basename.".png";
 			$html = file_get_contents($url);
 			file_put_contents(dirname(__FILE__)."/../../../uploads/".$uploaddir.$uploadfile, $html);
 			$imgurl=$options ->siteUrl."usr/uploads/".$uploaddir.$uploadfile;
 			$post_content=str_replace($url,$imgurl,$post_content);
+			
+			$text=array(
+				'name'  =>  $uploadfile,
+				'path'  =>  str_replace($options->siteUrl,"",$imgurl),
+				'size'  =>  0,
+				'type'  =>  "png",
+				'mime'  =>  "image/png"
+			);
+			$insertData = array(
+				'title'   =>  $uploadfile,
+				'slug'   =>  $uploadfile,
+				'parent'   =>  $postid,
+				'created'     =>  $time,
+				'modified'     =>  $time,
+				'text'     =>  serialize($text),
+				'authorId'     =>  $row["authorId"],
+				'type'     =>  'attachment',
+				'status'     =>  'publish',
+				'allowComment'     =>  '1',
+				'allowFeed'     =>  '1'
+			);
+			$insert = $db->insert('table.contents')->rows($insertData);
+			$insertId = $db->query($insert);
 		}
 	}
 	
@@ -157,11 +273,34 @@ if($action=='updateWBTCLinks'){
 			if(strpos($basename,"?")!== false){
 				$basename=explode("?",$basename)[0];
 			}
-			$uploadfile=time().$basename.".png";
+			$uploadfile=$time.$basename.".png";
 			$html = file_get_contents($url);
 			file_put_contents(dirname(__FILE__)."/../../../uploads/".$uploaddir.$uploadfile, $html);
 			$imgurl=$options ->siteUrl."usr/uploads/".$uploaddir.$uploadfile;
 			$post_content=str_replace($url,$imgurl,$post_content);
+			
+			$text=array(
+				'name'  =>  $uploadfile,
+				'path'  =>  str_replace($options->siteUrl,"",$imgurl),
+				'size'  =>  0,
+				'type'  =>  "png",
+				'mime'  =>  "image/png"
+			);
+			$insertData = array(
+				'title'   =>  $uploadfile,
+				'slug'   =>  $uploadfile,
+				'parent'   =>  $postid,
+				'created'     =>  $time,
+				'modified'     =>  $time,
+				'text'     =>  serialize($text),
+				'authorId'     =>  $row["authorId"],
+				'type'     =>  'attachment',
+				'status'     =>  'publish',
+				'allowComment'     =>  '1',
+				'allowFeed'     =>  '1'
+			);
+			$insert = $db->insert('table.contents')->rows($insertData);
+			$insertId = $db->query($insert);
 		}
 	}
 	

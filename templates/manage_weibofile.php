@@ -1,5 +1,4 @@
 <?php
-include 'common.php';
 include 'header.php';
 include 'menu.php';
 
@@ -10,7 +9,6 @@ $options=Typecho_Widget::widget('Widget_Options');
 $option=$options->plugin('WeiboFile');
 $plug_url = $options->pluginUrl;
 ?>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <div class="main">
     <div class="body container">
         <?php include 'page-title.php'; ?>
@@ -141,17 +139,30 @@ $plug_url = $options->pluginUrl;
 								$post_content = $posts->content;
 								preg_match_all( "/<(img|IMG).*?src=[\'|\"](.*?)[\'|\"].*?[\/]?>/", $post_content, $matches );
 								if(count($matches[2])>0){
+									/*
+									//转换阿里图传链接
+									$aliprefix=str_replace("/","\/",$option->aliprefix);
+									$aliprefix=str_replace(".","\.",$aliprefix);
+									preg_match_all( "/<(img|IMG).*?src=[\'|\"](?!".$aliprefix.")(.*?)[\'|\"].*?[\/]?>/", $post_content, $submatches );
+									if(count($submatches[2])>0){
+										echo '
+											<a href="javascript:;" class="alifile_convert_id" id="alifile_convert_id'.$posts->cid.'" data-id="'.$posts->cid.'">转换阿里</a>
+										';
+									}else{
+										echo '无需转换';
+									}
 									//转换微博图传链接
 									$weiboprefix=str_replace("/","\/",$option->weiboprefix);
 									$weiboprefix=str_replace(".","\.",$weiboprefix);
 									preg_match_all( "/<(img|IMG).*?src=[\'|\"](?!".$weiboprefix.")(.*?)[\'|\"].*?[\/]?>/", $post_content, $submatches );
 									if(count($submatches[2])>0){
 										echo '
-											<a href="javascript:;" class="weibofile_convert_id" id="weibofile_convert_id'.$posts->cid.'" data-id="'.$posts->cid.'">转换</a>
+											<a href="javascript:;" class="weibofile_convert_id" id="weibofile_convert_id'.$posts->cid.'" data-id="'.$posts->cid.'">转换微博</a>
 										';
 									}else{
 										echo '无需转换';
 									}
+									*/
 									//图片本地化
 									$siteUrl=str_replace("/","\/",$options ->siteUrl);
 									$siteUrl=str_replace(".","\.",$siteUrl);
@@ -203,8 +214,27 @@ $plug_url = $options->pluginUrl;
         </div><!-- end .typecho-page-main -->
     </div>
 </div>
+<?php
+include 'copyright.php';
+include 'common-js.php';
+include 'table-js.php';
+include 'footer.php';
+?>
 <script>
 $(function(){
+	/*
+	$(".alifile_convert_id").each(function(){
+		var id=$(this).attr("id");
+		$("#"+id).click( function () {
+			$.post("<?=$plug_url;?>/WeiboFile/ajax/weiboconvert.php",{action:"updateALTCLinks",postid:$(this).attr("data-id")},function(data){
+				var data=JSON.parse(data);
+				if(data.status=="noneconfig"){
+					alert(data.msg);
+				}
+				window.location.reload();
+			});
+		});
+	});
 	$(".weibofile_convert_id").each(function(){
 		var id=$(this).attr("id");
 		$("#"+id).click( function () {
@@ -217,6 +247,7 @@ $(function(){
 			});
 		});
 	});
+	*/
 	$(".weibofile_local_id").each(function(){
 		var id=$(this).attr("id");
 		$("#"+id).click( function () {
@@ -227,10 +258,3 @@ $(function(){
 	});
 });
 </script>
-
-<?php
-include 'copyright.php';
-include 'common-js.php';
-include 'table-js.php';
-include 'footer.php';
-?>

@@ -1,16 +1,11 @@
 <?php
 /**
- * 1、将 Typecho 的附件上传至新浪微博云存储中，无需申请appid，不占用服务器大小，可永久保存，只需一个不会登录的微博小号即可；<br />
- * 2、在图床的基础上新增上传视频和视频解析的功能；<br />
- * 3、新增前台微博图床上传；<br />
- * 4、新增微博同步和上传微博相册图床。<br />
- * 5、新增远程图片、微博图片之间的转换及图片本地化。
- * 6、新增阿里图床等。<div class="WeiboFileSet"><br /><a href="javascript:;" title="插件因兴趣于闲暇时间所写，故会有代码不规范、不专业和bug的情况，但完美主义促使代码还说得过去，如有bug或使用问题进行反馈即可。">鼠标轻触查看备注</a>&nbsp;<a href="http://club.tongleer.com" target="_blank">论坛</a>&nbsp;<a href="https://www.tongleer.com/api/web/pay.png" target="_blank">打赏</a>&nbsp;<a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=diamond0422@qq.com" target="_blank">反馈</a></div><style>.WeiboFileSet a{background: #4DABFF;padding: 5px;color: #fff;}</style>
+ * WeiboFile插件源于新浪图床(已使用微博官方api实现)，而后扩展了阿里图床、新浪同步等功能，因技术有限，若存在bug欢迎邮件反馈，方能逐步升级。<div class="WeiboFileSet"><br /><a href="javascript:;" title="插件因兴趣于闲暇时间所写，故会有代码不规范、不专业和bug的情况，但完美主义促使代码还说得过去，如有bug或使用问题进行反馈即可。">鼠标轻触查看备注</a>&nbsp;<a href="http://club.tongleer.com" target="_blank">论坛</a>&nbsp;<a href="https://www.tongleer.com/api/web/pay.png" target="_blank">打赏</a>&nbsp;<a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=diamond0422@qq.com" target="_blank">反馈</a></div><style>.WeiboFileSet a{background: #4DABFF;padding: 5px;color: #fff;}</style>
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.16<br /><span id="WeiboFileUpdateInfo"></span><script>WeiboFileXmlHttp=new XMLHttpRequest();WeiboFileXmlHttp.open("GET","https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=16",true);WeiboFileXmlHttp.send(null);WeiboFileXmlHttp.onreadystatechange=function () {if (WeiboFileXmlHttp.readyState ==4 && WeiboFileXmlHttp.status ==200){document.getElementById("WeiboFileUpdateInfo").innerHTML=WeiboFileXmlHttp.responseText;}}</script>
+ * @version 1.0.17<br /><span id="WeiboFileUpdateInfo"></span><script>WeiboFileXmlHttp=new XMLHttpRequest();WeiboFileXmlHttp.open("GET","https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=16",true);WeiboFileXmlHttp.send(null);WeiboFileXmlHttp.onreadystatechange=function () {if (WeiboFileXmlHttp.readyState ==4 && WeiboFileXmlHttp.status ==200){document.getElementById("WeiboFileUpdateInfo").innerHTML=WeiboFileXmlHttp.responseText;}}</script>
  * @link http://www.tongleer.com/
- * @date 2019-07-30
+ * @date 2019-08-31
  */
 date_default_timezone_set('Asia/Shanghai');
 require __DIR__ . '/include/Sinaupload.php';
@@ -115,7 +110,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		$headDiv=new Typecho_Widget_Helper_Layout();
 		$headDiv->html('
 			<script src="https://apps.bdimg.com/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-			<h2>微博同步相关配置</h2>
+			
 			<p>App Key：&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="weiboappkey" value="'.$config_weibooauth["weiboappkey"].'" placeholder="填写完成点击微博登陆" /></p>
 			<p>App Secret：<input type="text" id="weiboappsecret" value="'.$config_weibooauth["weiboappsecret"].'" placeholder="填写完成点击微博登陆" /></p>
 			<p>回调接口：'.$plug_url.'/WeiboFile/weibocallback.php</p>
@@ -153,9 +148,9 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		$headDiv->render();
 		
 		$albumtype = new Typecho_Widget_Helper_Form_Element_Radio('albumtype', array(
-            'ali'=>_t('阿里图床'),
-            'weibo'=>_t('微博图床')
-        ), 'ali', _t('使用图床类型'), _t("选择上传阿里/微博图床"));
+            'weibo'=>_t('微博图床'),
+			'ali'=>_t('阿里图床')
+        ), 'ali', _t('使用图床类型'), _t("选择上传阿里/微博图床，<font color='blue'>如果选择微博图床，因微博开启了防盗链，故如需显示图片必须在网站的head标签中加入&lt;meta name='referrer' content='same-origin'>代码或者修改以下微博图片链接前缀为http://的链接才行，https://前缀的图片链接不能显示，需要单独访问一次，才能显示。</font>。"));
 		$form->addInput($albumtype->addRule('enum', _t(''), array('ali', 'weibo')));
 		
 		$aliprefix = new Typecho_Widget_Helper_Form_Element_Text('aliprefix', array('value'), 'https://ae01.alicdn.com/kf/', _t('阿里图片链接前缀'), _t('阿里图片链接前缀'));
@@ -170,13 +165,13 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		$issavealbum = new Typecho_Widget_Helper_Form_Element_Radio('issavealbum', array(
             'y'=>_t('是'),
             'n'=>_t('否')
-        ), 'n', _t('是否保存到微博相册（需登陆微博同步账号，但和是否开启同步功能无关。）'), _t("默认不会保存到自己微博账号，保存到微博相册时如果频繁会禁用当前微博的接口，所以每次只能上传一张图片，<font color=red>且只能通过编辑器按钮上传，附件上传不会保存到微博相册</font>。"));
+        ), 'n', _t('是否保存到微博相册'), _t("<font color='blue'>阿里图床需要选择否，微博图床需要选择是</font>，保存到微博相册时如果频繁会禁用当前微博的接口，所以每次只能上传一张图片。"));
 		$form->addInput($issavealbum->addRule('enum', _t(''), array('y', 'n')));
 		
-        $weibouser = new Typecho_Widget_Helper_Form_Element_Text('weibouser', null, '', _t('微博用户名(非新注册、非二维码登陆，且使用过一段时间的账号)'), _t('备注：设置后可多尝试多上传几次，上传成功尽量不要将此微博小号登录微博系的网站、软件，可以登录，但不确定会不会上传失败，上传失败了再重新上传2次同样可以正常上传，如果小号等级过低，可尝试微博大号，微博账号不能有手机验证权限，插件可正常使用，无需担心。'));
+        $weibouser = new Typecho_Widget_Helper_Form_Element_Text('weibouser', null, '', _t('微博用户名(非新注册、非二维码登陆，且使用过一段时间的账号)'), _t('<font color="red">因微博官方原因，此处已废弃，可无需填写，在上方登陆个人微博账号后再进行操作。</font>备注：设置后可多尝试多上传几次，上传成功尽量不要将此微博小号登录微博系的网站、软件，可以登录，但不确定会不会上传失败，上传失败了再重新上传2次同样可以正常上传，如果小号等级过低，可尝试微博大号，微博账号不能有手机验证权限，插件可正常使用，无需担心。'));
         $form->addInput($weibouser);
 
-        $weibopass = new Typecho_Widget_Helper_Form_Element_Password('weibopass', null, '', _t('微博密码'));
+        $weibopass = new Typecho_Widget_Helper_Form_Element_Password('weibopass', null, '', _t('微博密码'),'<font color="red">因微博官方原因，此处已废弃，可无需填写，在上方登陆个人微博账号后再进行操作。</font>');
         $form->addInput($weibopass);
 		
 		$weiboprefix = new Typecho_Widget_Helper_Form_Element_Text('weiboprefix', array('value'), 'https://ws3.sinaimg.cn/large/', _t('微博图片链接前缀'), _t('微博图片链接前缀'));
@@ -300,7 +295,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		}catch(Exception $e){}
 		$dottomDiv=new Typecho_Widget_Helper_Layout();
 		$dottomDiv->html('
-			<h2>阿里/微博图床相关配置</h2>
+			
 		');
 		$dottomDiv->render();
     }
@@ -399,7 +394,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 
     // 删除文件
     public static function deleteFile($filepath){
-		@unlink(dirname(__FILE__).'/../../..'.$filepath);
+		@unlink(dirname(__FILE__).'/../../../'.$filepath);
         return true;
     }
 
@@ -428,17 +423,60 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		
 		if(in_array($ext,array('gif','jpg','jpeg','png','bmp'))){
 			if($option->albumtype=="weibo"){
-				$Sinaupload=new Sinaupload('');
-				$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
-				$result=$Sinaupload->upload($filename);
-				$arr = json_decode($result,true);
-				return array(
-					'name'  =>  $file['name'],
-					'path'  =>  $arr['data']['pics']['pic_1']['pid'],
-					'size'  =>  $file['size'],
-					'type'  =>  $ext,
-					'mime'  =>  Typecho_Common::mimeContentType($filename)
-				);
+				if($option->issavealbum=="n"){
+					$Sinaupload=new Sinaupload('');
+					$cookie=$Sinaupload->login($option->weibouser,$option->weibopass);
+					$result=$Sinaupload->upload($filename);
+					$arr = json_decode($result,true);
+					return array(
+						'name'  =>  $file['name'],
+						'path'  =>  $arr['data']['pics']['pic_1']['pid'],
+						'size'  =>  $file['size'],
+						'type'  =>  $ext,
+						'mime'  =>  Typecho_Common::mimeContentType($filename)
+					);
+				}else{
+					$name=$file['name'];
+					$options = Typecho_Widget::widget('Widget_Options');
+					$plug_url = $options->pluginUrl;
+					$config_weibooauth=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../plugins/WeiboFile/config/config_weibooauth.php'),'<?php die; ?>'));
+					$config_weibotoken=@unserialize(ltrim(file_get_contents(dirname(__FILE__).'/../../plugins/WeiboFile/config/config_weibotoken.php'),'<?php die; ?>'));
+					
+					$time=time();
+					$utfname=$time."_".$name;
+					$gbkname = iconv("utf-8", "gbk", $utfname);
+					move_uploaded_file($filename, dirname(__FILE__).'/uploadfile/'.$gbkname);
+					$img=$plug_url."/WeiboFile/uploadfile/".$utfname;
+					
+					/* 修改了下风格，并添加文章关键词作为微博话题，提高与其他相关微博的关联率 */
+					$string1 = '【'.$options->title.'】';
+					$string2 = '来源：'.$options->siteUrl;
+					/* 微博字数控制，避免超标同步失败 */
+					$postData = $string1.mb_strimwidth("贴图",0, 140,'...').$string2;
+					
+					$c = new SaeTClientV2( $config_weibooauth["weiboappkey"] , $config_weibooauth["weiboappsecret"] , $config_weibotoken["access_token"] );
+					$arr=$c->share($postData,$img);
+					unlink(dirname(__FILE__).'/uploadfile/'.$gbkname);
+					
+					if(isset($arr['original_pic'])){
+						$url=basename($arr['original_pic']);
+						return array(
+							'name'  =>  $name,
+							'path'  =>  $url,
+							'size'  =>  $file['size'],
+							'type'  =>  $ext,
+							'mime'  =>  "image/*"
+						);
+					}else{
+						return array(
+							'name'  =>  $name,
+							'path'  =>  '上传失败',
+							'size'  =>  $file['size'],
+							'type'  =>  $ext,
+							'mime'  =>  "image/*"
+						);
+					}
+				}
 			}else if($option->albumtype=="ali"){
 				if(@$file['size']<=1024*1024*3){
 					$tempfilename = iconv("utf-8", "gbk", @$file['name']);
@@ -573,6 +611,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 
     // 修改文件处理函数
     public static function modifyHandle($content, $file){
+		self::deleteFile($content['attachment']->path);
         return self::uploadFile($file, $content);
     }
 
@@ -594,7 +633,11 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 			return Typecho_Common::url($content['attachment']->path.'', 'https://player.youku.com/embed/');
 		}else if(in_array($ext,array('gif','jpg','jpeg','png','bmp'))){
 			if($option->albumtype=="weibo"){
-				return Typecho_Common::url($content['attachment']->path.'.jpg', $option->weiboprefix);
+				if($option->issavealbum=="n"){
+					return Typecho_Common::url($content['attachment']->path.'.jpg', $option->weiboprefix);
+				}else{
+					return Typecho_Common::url($content['attachment']->path,$option->weiboprefix);
+				}
 			}else if($option->albumtype=="ali"){
 				return Typecho_Common::url($content['attachment']->path, $option->aliprefix);
 			}
@@ -697,5 +740,23 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 			$c = new SaeTClientV2( $config_weibooauth["weiboappkey"] , $config_weibooauth["weiboappsecret"] , $config_weibotoken["access_token"] );
 			$res=$c->share($postData,$img);
 		}
+	}
+	public static function httpClient($url,$data){
+		$client = Typecho_Http_Client::get();
+		if ($client) {
+			$str = "";
+			foreach ( $data as $key => $value ) { 
+				$str.= "$key=" . urlencode( $value ). "&" ;
+			}
+			$data = substr($str,0,-1);
+			$client->setData($data)
+				->setTimeout(30)
+				->send($url);
+			$status = $client->getResponseStatus();
+			$rs = $client->getResponseBody();
+			$arr=json_decode($rs,true);
+			return $arr;
+		}
+		return 0;
 	}
 }
