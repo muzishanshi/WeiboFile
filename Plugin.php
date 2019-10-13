@@ -168,12 +168,6 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
         ), 'n', _t('是否保存到微博相册'), _t("<font color='blue'>阿里图床需要选择否，微博图床需要选择是</font>，保存到微博相册时如果频繁会禁用当前微博的接口，所以每次只能上传一张图片。"));
 		$form->addInput($issavealbum->addRule('enum', _t(''), array('y', 'n')));
 		
-        $weibouser = new Typecho_Widget_Helper_Form_Element_Text('weibouser', null, '', _t('微博用户名(非新注册、非二维码登陆，且使用过一段时间的账号)'), _t('<font color="red">因微博官方原因，此处已废弃，可无需填写，在上方登陆个人微博账号后再进行操作。</font>备注：设置后可多尝试多上传几次，上传成功尽量不要将此微博小号登录微博系的网站、软件，可以登录，但不确定会不会上传失败，上传失败了再重新上传2次同样可以正常上传，如果小号等级过低，可尝试微博大号，微博账号不能有手机验证权限，插件可正常使用，无需担心。'));
-        $form->addInput($weibouser);
-
-        $weibopass = new Typecho_Widget_Helper_Form_Element_Password('weibopass', null, '', _t('微博密码'),'<font color="red">因微博官方原因，此处已废弃，可无需填写，在上方登陆个人微博账号后再进行操作。</font>');
-        $form->addInput($weibopass);
-		
 		$weiboprefix = new Typecho_Widget_Helper_Form_Element_Text('weiboprefix', array('value'), 'https://ws3.sinaimg.cn/large/', _t('微博图片链接前缀'), _t('微博图片链接前缀'));
         $form->addInput($weiboprefix);
 		
@@ -182,7 +176,13 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
             'n'=>_t('否')
         ), 'y', _t('非图片本地上传'), _t("1、启用后可支持上传其他格式文件到本地服务器。<br />2、使用Typecho自带的附件上传文件时，如果长时间没有弹出网址窗口可尝试刷新一次页面即可。"));
 		$form->addInput($isuploadlocal->addRule('enum', _t(''), array('y', 'n')));
-		//图片
+		
+		$isEnableJQuery = new Typecho_Widget_Helper_Form_Element_Radio('isEnableJQuery', array(
+            'y'=>_t('是'),
+            'n'=>_t('否')
+        ), 'y', _t('是否加载JQuery'), _t("如果主题head中自带jquery，需要选择否；如果主题中未加载jquery，则需要选择是。"));
+		$form->addInput($isEnableJQuery->addRule('enum', _t(''), array('y', 'n')));
+		
 		$webimgupload = new Typecho_Widget_Helper_Form_Element_Radio('webimgupload', array(
             'y'=>_t('启用'),
             'n'=>_t('禁用')
@@ -204,6 +204,12 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
         $form->addInput($videoupload->addRule('enum', _t(''), array('y', 'n')));
 		$videoupload = @isset($_POST['videoupload']) ? addslashes(trim($_POST['videoupload'])) : '';
 		self::moduleVideoUpload($db,$videoupload);
+		//已废弃
+		$weibouser = new Typecho_Widget_Helper_Form_Element_Text('weibouser', null, '', _t('微博用户名(非新注册、非二维码登陆，且使用过一段时间的账号)'), _t('<font color="red">因微博官方原因，此处已废弃，可无需填写，在上方登陆个人微博账号后再进行操作。</font>备注：设置后可多尝试多上传几次，上传成功尽量不要将此微博小号登录微博系的网站、软件，可以登录，但不确定会不会上传失败，上传失败了再重新上传2次同样可以正常上传，如果小号等级过低，可尝试微博大号，微博账号不能有手机验证权限，插件可正常使用，无需担心。'));
+        $form->addInput($weibouser);
+
+        $weibopass = new Typecho_Widget_Helper_Form_Element_Password('weibopass', null, '', _t('微博密码'),'<font color="red">因微博官方原因，此处已废弃，可无需填写，在上方登陆个人微博账号后再进行操作。</font>');
+        $form->addInput($weibopass);
 		//视频列表
 		try{
 			$queryVideoAdmin= $db->select()->from('table.weibofile_videoupload')->order('videoupinstime',Typecho_Db::SORT_DESC);
