@@ -3,9 +3,9 @@
  * WeiboFile插件源于新浪图床(已使用微博官方api实现)，而后扩展了阿里图床、新浪同步等功能，因技术有限，若存在bug欢迎邮件反馈，方能逐步升级。<div class="WeiboFileSet"><br /><a href="javascript:;" title="插件因兴趣于闲暇时间所写，故会有代码不规范、不专业和bug的情况，但完美主义促使代码还说得过去，如有bug或使用问题进行反馈即可。">鼠标轻触查看备注</a>&nbsp;<a href="http://club.tongleer.com" target="_blank">论坛</a>&nbsp;<a href="https://www.tongleer.com/api/web/pay.png" target="_blank">打赏</a>&nbsp;<a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=diamond0422@qq.com" target="_blank">反馈</a></div><style>.WeiboFileSet a{background: #4DABFF;padding: 5px;color: #fff;}</style>
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.17<br /><span id="WeiboFileUpdateInfo"></span><script>WeiboFileXmlHttp=new XMLHttpRequest();WeiboFileXmlHttp.open("GET","https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=17",true);WeiboFileXmlHttp.send(null);WeiboFileXmlHttp.onreadystatechange=function () {if (WeiboFileXmlHttp.readyState ==4 && WeiboFileXmlHttp.status ==200){document.getElementById("WeiboFileUpdateInfo").innerHTML=WeiboFileXmlHttp.responseText;}}</script>
+ * @version 1.0.18<br /><span id="WeiboFileUpdateInfo"></span><script>WeiboFileXmlHttp=new XMLHttpRequest();WeiboFileXmlHttp.open("GET","https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=18",true);WeiboFileXmlHttp.send(null);WeiboFileXmlHttp.onreadystatechange=function () {if (WeiboFileXmlHttp.readyState ==4 && WeiboFileXmlHttp.status ==200){document.getElementById("WeiboFileUpdateInfo").innerHTML=WeiboFileXmlHttp.responseText;}}</script>
  * @link http://www.tongleer.com/
- * @date 2019-08-31
+ * @date 2019-10-14
  */
 date_default_timezone_set('Asia/Shanghai');
 require __DIR__ . '/include/Sinaupload.php';
@@ -149,9 +149,17 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		
 		$albumtype = new Typecho_Widget_Helper_Form_Element_Radio('albumtype', array(
             'weibo'=>_t('微博图床'),
-			'ali'=>_t('阿里图床')
+			'ali'=>_t('阿里图床'),
+			'qihu'=>_t('奇虎360图床'),
+			'jd'=>_t('京东图床')
         ), 'ali', _t('使用图床类型'), _t("选择上传阿里/微博图床，<font color='blue'>如果选择微博图床，因微博开启了防盗链，故如需显示图片必须在网站的head标签中加入&lt;meta name='referrer' content='same-origin'>代码或者修改以下微博图片链接前缀为http://的链接才行，https://前缀的图片链接不能显示，需要单独访问一次，才能显示。</font>。"));
-		$form->addInput($albumtype->addRule('enum', _t(''), array('ali', 'weibo')));
+		$form->addInput($albumtype->addRule('enum', _t(''), array('ali', 'weibo', 'qihu', 'jd')));
+		
+		$qihuprefix = new Typecho_Widget_Helper_Form_Element_Text('qihuprefix', array('value'), 'http://p0.so.qhimgs1.com/', _t('奇虎360图片链接前缀'), _t('奇虎360图片链接前缀'));
+        $form->addInput($qihuprefix);
+		
+		$jdprefix = new Typecho_Widget_Helper_Form_Element_Text('jdprefix', array('value'), 'https://img14.360buyimg.com/uba/jfs/t1/', _t('京东图片链接前缀'), _t('京东图片链接前缀'));
+        $form->addInput($jdprefix);
 		
 		$aliprefix = new Typecho_Widget_Helper_Form_Element_Text('aliprefix', array('value'), 'https://ae01.alicdn.com/kf/', _t('阿里图片链接前缀'), _t('阿里图片链接前缀'));
         $form->addInput($aliprefix);
@@ -163,9 +171,8 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		$form->addInput($isweibosync->addRule('enum', _t(''), array('y', 'n')));
 		
 		$issavealbum = new Typecho_Widget_Helper_Form_Element_Radio('issavealbum', array(
-            'y'=>_t('是'),
-            'n'=>_t('否')
-        ), 'n', _t('是否保存到微博相册'), _t("<font color='blue'>阿里图床需要选择否，微博图床需要选择是</font>，保存到微博相册时如果频繁会禁用当前微博的接口，所以每次只能上传一张图片。"));
+            'y'=>_t('是')
+        ), 'y', _t('是否保存到微博相册'), _t("保存到微博相册时如果频繁会禁用当前微博的接口，所以每次只能上传一张图片。<font color='blue'>使用微博授权方式上传，在成功授权后，还要注意微博账号需要绑定手机。</font>"));
 		$form->addInput($issavealbum->addRule('enum', _t(''), array('y', 'n')));
 		
 		$weiboprefix = new Typecho_Widget_Helper_Form_Element_Text('weiboprefix', array('value'), 'https://ws3.sinaimg.cn/large/', _t('微博图片链接前缀'), _t('微博图片链接前缀'));
@@ -520,6 +527,82 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 					'type'  =>  $ext,
 					'mime'  =>  "image/*"
 				);
+			}else if($option->albumtype=="qihu"){
+				if(@$file['size']<=1024*1024*3){
+					$tempfilename = iconv("utf-8", "gbk", @$file['name']);
+					move_uploaded_file(@$file['tmp_name'], dirname(__FILE__).'/uploadfile/'.$tempfilename);
+					$ch = curl_init();
+					$filePath = dirname(__FILE__).'/uploadfile/'.$tempfilename;
+					$data = array('file' => "multipart", 'Filedata' => '@' . $filePath);
+					if (class_exists('\CURLFile')) {
+						$data['Filedata'] = new \CURLFile(realpath($filePath));
+					} else {
+						if (defined('CURLOPT_SAFE_UPLOAD')) {
+							curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
+						}
+					}
+					curl_setopt($ch, CURLOPT_URL, 'https://api.uomg.com/api/image.360');
+					curl_setopt($ch, CURLOPT_POST, 1);
+					curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					$json=curl_exec($ch);
+					curl_close($ch);
+					@unlink(dirname(__FILE__).'/uploadfile/'.$tempfilename);
+					$arr=json_decode($json,true);
+					$imgurls=explode("/",$arr['imgurl']);
+					return array(
+						'name'  =>  $file['name'],
+						'path'  =>  $imgurls[count($imgurls)-1],
+						'size'  =>  $file['size'],
+						'type'  =>  $ext,
+						'mime'  =>  "image/*"
+					);
+				}
+				return array(
+					'name'  =>  $file['name'],
+					'path'  =>  '暂时最大支持3M图片，增加大小可手动修改ajax/videoInsert.php中86行代码。',
+					'size'  =>  $file['size'],
+					'type'  =>  $ext,
+					'mime'  =>  "image/*"
+				);
+			}else if($option->albumtype=="jd"){
+				if(@$file['size']<=1024*1024*3){
+					$tempfilename = iconv("utf-8", "gbk", @$file['name']);
+					move_uploaded_file(@$file['tmp_name'], dirname(__FILE__).'/uploadfile/'.$tempfilename);
+					$ch = curl_init();
+					$filePath = dirname(__FILE__).'/uploadfile/'.$tempfilename;
+					$data = array('file' => "multipart", 'Filedata' => '@' . $filePath);
+					if (class_exists('\CURLFile')) {
+						$data['Filedata'] = new \CURLFile(realpath($filePath));
+					} else {
+						if (defined('CURLOPT_SAFE_UPLOAD')) {
+							curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
+						}
+					}
+					curl_setopt($ch, CURLOPT_URL, 'https://api.uomg.com/api/image.jd');
+					curl_setopt($ch, CURLOPT_POST, 1);
+					curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					$json=curl_exec($ch);
+					curl_close($ch);
+					@unlink(dirname(__FILE__).'/uploadfile/'.$tempfilename);
+					$arr=json_decode($json,true);
+					$imgurls=explode("/",$arr['imgurl']);
+					return array(
+						'name'  =>  $file['name'],
+						'path'  =>  $imgurls[6]."/".$imgurls[7]."/".$imgurls[8]."/".$imgurls[9]."/".$imgurls[10]."/".$imgurls[11],
+						'size'  =>  $file['size'],
+						'type'  =>  $ext,
+						'mime'  =>  "image/*"
+					);
+				}
+				return array(
+					'name'  =>  $file['name'],
+					'path'  =>  '暂时最大支持3M图片，增加大小可手动修改ajax/videoInsert.php中86行代码。',
+					'size'  =>  $file['size'],
+					'type'  =>  $ext,
+					'mime'  =>  "image/*"
+				);
 			}
 		}else if(in_array($ext,array('wmv', 'avi', 'dat','asf','rm','rmvb','ram','mpg','mpeg','3gp','mov','mp4','m4v','dvix','dv','vob','mkv','vob','ram','qt','divx','cpk','fli','flc','mod','flv'))){
 			if(count($row)>0&&$option->videoupload=='y'){
@@ -646,6 +729,10 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 				}
 			}else if($option->albumtype=="ali"){
 				return Typecho_Common::url($content['attachment']->path, $option->aliprefix);
+			}else if($option->albumtype=="qihu"){
+				return Typecho_Common::url($content['attachment']->path, $option->qihuprefix);
+			}else if($option->albumtype=="jd"){
+				return Typecho_Common::url($content['attachment']->path, $option->jdprefix);
 			}
 		}else{
 			return Typecho_Common::url($content['attachment']->path, $plug_url.'/../..');
