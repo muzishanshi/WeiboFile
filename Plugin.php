@@ -1,11 +1,11 @@
 <?php
 /**
- * WeiboFile插件源于新浪图床(已使用微博官方api实现)，而后扩展了阿里图床、新浪同步等功能，因技术有限，若存在bug欢迎邮件反馈，方能逐步升级。<div class="WeiboFileSet"><br /><a href="javascript:;" title="插件因兴趣于闲暇时间所写，故会有代码不规范、不专业和bug的情况，但完美主义促使代码还说得过去，如有bug或使用问题进行反馈即可。">鼠标轻触查看备注</a>&nbsp;<a href="http://club.tongleer.com" target="_blank">论坛</a>&nbsp;<a href="https://www.tongleer.com/api/web/pay.png" target="_blank">打赏</a>&nbsp;<a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=diamond0422@qq.com" target="_blank">反馈</a></div><style>.WeiboFileSet a{background: #4DABFF;padding: 5px;color: #fff;}</style>
+ * WeiboFile插件源于新浪图床(已使用微博官方api实现)，而后扩展了阿里图床、京东图床、360图床、新浪同步等功能，因技术有限，若存在bug欢迎邮件反馈，方能逐步升级。<div class="WeiboFileSet"><br /><a href="javascript:;" title="插件因兴趣于闲暇时间所写，故会有代码不规范、不专业和bug的情况，但完美主义促使代码还说得过去，如有bug或使用问题进行反馈即可。">鼠标轻触查看备注</a>&nbsp;<a href="http://club.tongleer.com" target="_blank">论坛</a>&nbsp;<a href="https://www.tongleer.com/api/web/pay.png" target="_blank">打赏</a>&nbsp;<a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=diamond0422@qq.com" target="_blank">反馈</a></div><style>.WeiboFileSet a{background: #4DABFF;padding: 5px;color: #fff;}</style>
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.18<br /><span id="WeiboFileUpdateInfo"></span><script>WeiboFileXmlHttp=new XMLHttpRequest();WeiboFileXmlHttp.open("GET","https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=18",true);WeiboFileXmlHttp.send(null);WeiboFileXmlHttp.onreadystatechange=function () {if (WeiboFileXmlHttp.readyState ==4 && WeiboFileXmlHttp.status ==200){document.getElementById("WeiboFileUpdateInfo").innerHTML=WeiboFileXmlHttp.responseText;}}</script>
+ * @version 1.0.19<br /><span id="WeiboFileUpdateInfo"></span><script>WeiboFileXmlHttp=new XMLHttpRequest();WeiboFileXmlHttp.open("GET","https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=19",true);WeiboFileXmlHttp.send(null);WeiboFileXmlHttp.onreadystatechange=function () {if (WeiboFileXmlHttp.readyState ==4 && WeiboFileXmlHttp.status ==200){document.getElementById("WeiboFileUpdateInfo").innerHTML=WeiboFileXmlHttp.responseText;}}</script>
  * @link http://www.tongleer.com/
- * @date 2019-10-14
+ * @date 2019-10-15
  */
 date_default_timezone_set('Asia/Shanghai');
 require __DIR__ . '/include/Sinaupload.php';
@@ -152,13 +152,13 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 			'ali'=>_t('阿里图床'),
 			'qihu'=>_t('奇虎360图床'),
 			'jd'=>_t('京东图床')
-        ), 'ali', _t('使用图床类型'), _t("选择上传阿里/微博图床，<font color='blue'>如果选择微博图床，因微博开启了防盗链，故如需显示图片必须在网站的head标签中加入&lt;meta name='referrer' content='same-origin'>代码或者修改以下微博图片链接前缀为http://的链接才行，https://前缀的图片链接不能显示，需要单独访问一次，才能显示。</font>。"));
+        ), 'jd', _t('使用图床类型'), _t("选择上传阿里/微博图床，<font color='blue'>如果选择微博图床，因微博开启了防盗链，故如需显示图片必须在网站的head标签中加入&lt;meta name='referrer' content='same-origin'>代码或者修改以下微博图片链接前缀为http://的链接才行，https://前缀的图片链接不能显示，需要单独访问一次，才能显示。</font>。"));
 		$form->addInput($albumtype->addRule('enum', _t(''), array('ali', 'weibo', 'qihu', 'jd')));
 		
 		$qihuprefix = new Typecho_Widget_Helper_Form_Element_Text('qihuprefix', array('value'), 'http://p0.so.qhimgs1.com/', _t('奇虎360图片链接前缀'), _t('奇虎360图片链接前缀'));
         $form->addInput($qihuprefix);
 		
-		$jdprefix = new Typecho_Widget_Helper_Form_Element_Text('jdprefix', array('value'), 'https://img14.360buyimg.com/uba/jfs/t1/', _t('京东图片链接前缀'), _t('京东图片链接前缀'));
+		$jdprefix = new Typecho_Widget_Helper_Form_Element_Text('jdprefix', array('value'), 'https://img14.360buyimg.com/uba/', _t('京东图片链接前缀'), _t('京东图片链接前缀'));
         $form->addInput($jdprefix);
 		
 		$aliprefix = new Typecho_Widget_Helper_Form_Element_Text('aliprefix', array('value'), 'https://ae01.alicdn.com/kf/', _t('阿里图片链接前缀'), _t('阿里图片链接前缀'));
@@ -201,7 +201,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		$webimgheight = new Typecho_Widget_Helper_Form_Element_Text('webimgheight', array('value'), '300', _t('前台图床自定义高度'), _t('设置合适的高度可有利于前台展示。'));
         $form->addInput($webimgheight);
 		
-		$webimgbg = new Typecho_Widget_Helper_Form_Element_Text('webimgbg', array('value'), 'https://ws3.sinaimg.cn/large/ecabade5ly1fxp3dil4pxj21hc0u0wn1.jpg', _t('前台图床默认背景'), _t('前台图床无上传时的背景。'));
+		$webimgbg = new Typecho_Widget_Helper_Form_Element_Text('webimgbg', array('value'), 'https://ae01.alicdn.com/kf/HTB1jpKrVXzqK1RjSZFC762bxVXa1.png', _t('前台图床默认背景'), _t('前台图床无上传时的背景。'));
         $form->addInput($webimgbg);
 		//视频
 		$videoupload = new Typecho_Widget_Helper_Form_Element_Radio('videoupload', array(
@@ -588,9 +588,14 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 					@unlink(dirname(__FILE__).'/uploadfile/'.$tempfilename);
 					$arr=json_decode($json,true);
 					$imgurls=explode("/",$arr['imgurl']);
+					if(strpos($imgurls[4],"ERROR")!==false){
+						$basename="上传失败换张图片试试";
+					}else{
+						$basename=substr($arr['imgurl'],strpos($arr['imgurl'],$imgurls[4]));
+					}
 					return array(
 						'name'  =>  $file['name'],
-						'path'  =>  $imgurls[6]."/".$imgurls[7]."/".$imgurls[8]."/".$imgurls[9]."/".$imgurls[10]."/".$imgurls[11],
+						'path'  =>  $basename,
 						'size'  =>  $file['size'],
 						'type'  =>  $ext,
 						'mime'  =>  "image/*"

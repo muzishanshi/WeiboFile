@@ -294,7 +294,11 @@ if($action=='uploadMovie'){
 				$arr=json_decode($json,true);
 				if(isset($arr['imgurl'])){
 					$imgurls=explode("/",$arr['imgurl']);
-					$url=$option->jdprefix.$imgurls[6]."/".$imgurls[7]."/".$imgurls[8]."/".$imgurls[9]."/".$imgurls[10]."/".$imgurls[11];
+					if(strpos($imgurls[4],"ERROR")!==false){
+						$url="上传失败换张图片试试";
+					}else{
+						$url=$option->jdprefix.substr($arr['imgurl'],strpos($arr['imgurl'],$imgurls[4]));
+					}
 					$text=array(
 						'name'  =>  $name,
 						'path'  =>  $url,

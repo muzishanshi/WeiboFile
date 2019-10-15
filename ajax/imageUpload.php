@@ -145,7 +145,11 @@ if($action=='imageUpload'){
 			@unlink(dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 			$arr=json_decode($json,true);
 			$imgurls=explode("/",$arr['imgurl']);
-			$urls=$option->jdprefix.$imgurls[6]."/".$imgurls[7]."/".$imgurls[8]."/".$imgurls[9]."/".$imgurls[10]."/".$imgurls[11];
+			if(strpos($imgurls[4],"ERROR")!==false){
+				$urls="上传失败换张图片试试";
+			}else{
+				$urls=$option->jdprefix.substr($arr['imgurl'],strpos($arr['imgurl'],$imgurls[4]));
+			}
 			$hrefs="<a style='text-decoration:none;' href='".$urls."' target='_blank' title='".$_FILES['webimgupload']['name'][0]."'>".$urls."</a>";
 			$codes="<a href='".$urls."' target='_blank' title='".$_FILES['webimgupload']['name'][0]."'><img src='".$urls."' alt='".$_FILES['webimgupload']['name'][0]."' /></a>";
 			$json=json_encode(array("status"=>"ok","msg"=>"上传结果","urls"=>$urls,"hrefs"=>$hrefs,"codes"=>$codes));
