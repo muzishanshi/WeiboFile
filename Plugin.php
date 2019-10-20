@@ -12,11 +12,22 @@ require __DIR__ . '/include/Sinaupload.php';
 include_once dirname(__FILE__) .'/include/saetv2.ex.class.php';
 
 class WeiboFile_Plugin implements Typecho_Plugin_Interface{
+	/** @var string 提交路由前缀 */
+    public static $action = 'manage_weibofile';
+    /** @var string 控制菜单链接 */
+    public static $panel  = 'WeiboFile/templates/manage_weibofile.php';
     // 激活插件
     public static function activate(){
 		$db = Typecho_Db::get();
-		Helper::addPanel(3, 'WeiboFile/templates/manage_weibofile.php', '图床管理', 'WeiboFile微博图床', 'administrator');
-		Helper::addAction('manage_weibofile', 'WeiboFile_Plugin');
+		$versions=explode("/",Typecho_Widget::widget('Widget_Options')->Version);
+		if($versions[1]>="19.10.15"){
+			self::$panel='WeiboFile/templates/manage_weibofile2.php';
+		}
+		if($versions[1]>="19.10.20"){
+			self::$panel='WeiboFile/templates/manage_weibofile3.php';
+		}
+		Helper::addPanel(3, self::$panel, '图床管理', 'WeiboFile微博图床', 'administrator');
+		Helper::addAction(self::$action, 'WeiboFile_Plugin');
 		//图片
         Typecho_Plugin::factory('Widget_Upload')->uploadHandle = array('WeiboFile_Plugin', 'uploadHandle');
         Typecho_Plugin::factory('Widget_Upload')->modifyHandle = array('WeiboFile_Plugin', 'modifyHandle');
@@ -39,8 +50,15 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
     public static function deactivate(){
 		//删除页面模板
 		$db = Typecho_Db::get();
-		Helper::removeAction('manage_weibofile');
-		Helper::removePanel(3, 'WeiboFile/templates/manage_weibofile.php');
+		$versions=explode("/",Typecho_Widget::widget('Widget_Options')->Version);
+		if($versions[1]>="19.10.15"){
+			self::$panel='WeiboFile/templates/manage_weibofile2.php';
+		}
+		if($versions[1]>="19.10.20"){
+			self::$panel='WeiboFile/templates/manage_weibofile3.php';
+		}
+		Helper::removeAction(self::$action);
+		Helper::removePanel(3, self::$panel);
 		$queryTheme= $db->select('value')->from('table.options')->where('name = ?', 'theme'); 
 		$rowTheme = $db->fetchRow($queryTheme);
 		@unlink(dirname(__FILE__).'/../../themes/'.$rowTheme['value'].'/page_weibofile_videoupload.php');
