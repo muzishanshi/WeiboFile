@@ -13,9 +13,7 @@ if($versions[1]>="19.10.15"){
 	WeiboFile_Plugin::$panel='WeiboFile/templates/manage_weibofile2.php';
 }
 ?>
-  <!-- content start -->
-  <div class="admin-content row typecho-page-main">
-    <div class="admin-content-body typecho-list">
+    <div class="admin-content-body typecho-list row typecho-page-main">
       <div class="am-cf am-padding typecho-page-title">
 			<div class="am-fl am-cf">
 				<?php include 'page-title.php'; ?>
@@ -248,11 +246,6 @@ if($versions[1]>="19.10.15"){
 	<footer class="admin-content-footer">
 	<?php include 'copyright.php';?>
 	</footer>
-  </div>
-  <!-- content end -->
-</div>
-
-<a href="#" class="am-icon-btn am-icon-th-list am-show-sm-only admin-menu" data-am-offcanvas="{target: '#admin-offcanvas'}"></a>
 <?php
 include 'copyright.php';
 include 'common-js.php';
