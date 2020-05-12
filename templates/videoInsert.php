@@ -30,7 +30,7 @@ try{
 	 	});
 		$(document).on('click', '#wmd-button-weiboimg', function(){
 	 		$(this).after(
-	 			'<div class="wmd-prompt-dialog"><div><p><b>图床</b></p><p>微博图床一次只能上传一张图片，阿里图床暂时最大支持3M图片，增加大小可手动修改ajax/videoInsert.php中86行代码。</p></div><form enctype="multipart/form-data"><input type="file" name="img_file" id="img_file" accept="image/*" multiple><br /><br /><button id="uploadImgBtn" type="button" class="btn-s primary" onclick="startImgUpload(this);">上传并插入</button><button type="button" class="btn-s" onclick="cancelAlert();">取消</button><br /><br /><div id="img_upload_msg"></div><br /></form></div>');
+	 			'<div class="wmd-prompt-dialog"><div><p><b>图床</b></p><p>微博图床一次只能上传一张图片，其他图床暂时最大支持3M图片，增加大小可手动修改ajax/videoInsert.php中的代码。</p></div><form enctype="multipart/form-data"><input type="file" name="img_file" id="img_file" accept="image/*" multiple><br /><br /><button id="uploadImgBtn" type="button" class="btn-s primary" onclick="startImgUpload(this);">上传并插入</button><button type="button" class="btn-s" onclick="cancelAlert();">取消</button><br /><br /><div id="img_upload_msg"></div><br /></form></div>');
 
 	 	});
 

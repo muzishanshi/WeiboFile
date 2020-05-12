@@ -29,16 +29,19 @@
 
 #### 版本推荐：
 
-	php5.6+mysql5.0.11+Typecho正式版，其他版本也可能支持，若不支持联系作者。
+	php5.6+mysql5.0.11，其他版本也可能支持，若不支持联系作者。
 
 #### 与我联系：
 
 	作者：二呆
 	网站：http://www.tongleer.com/
 	Github：https://github.com/muzishanshi/WeiboFile
-	1元入群：http://joke.tongleer.com/327.html
 
 #### 更新记录：
+2020-05-12 1.0.20
+
+	更新图床接口
+
 2019-10-15 1.0.19
 
 	新增京东图床、奇虎360图床

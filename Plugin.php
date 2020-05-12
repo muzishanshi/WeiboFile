@@ -3,9 +3,9 @@
  * WeiboFile插件源于新浪图床(已使用微博官方api实现)，而后扩展了阿里图床、京东图床、360图床、新浪同步等功能，因技术有限，若存在bug欢迎邮件反馈，方能逐步升级。<div class="WeiboFileSet"><br /><a href="javascript:;" title="插件因兴趣于闲暇时间所写，故会有代码不规范、不专业和bug的情况，但完美主义促使代码还说得过去，如有bug或使用问题进行反馈即可。">鼠标轻触查看备注</a>&nbsp;<a href="http://club.tongleer.com" target="_blank">论坛</a>&nbsp;<a href="https://www.tongleer.com/api/web/pay.png" target="_blank">打赏</a>&nbsp;<a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=diamond0422@qq.com" target="_blank">反馈</a></div><style>.WeiboFileSet a{background: #4DABFF;padding: 5px;color: #fff;}</style>
  * @package WeiboFile For Typecho
  * @author 二呆
- * @version 1.0.19<br /><span id="WeiboFileUpdateInfo"></span><script>WeiboFileXmlHttp=new XMLHttpRequest();WeiboFileXmlHttp.open("GET","https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=19",true);WeiboFileXmlHttp.send(null);WeiboFileXmlHttp.onreadystatechange=function () {if (WeiboFileXmlHttp.readyState ==4 && WeiboFileXmlHttp.status ==200){document.getElementById("WeiboFileUpdateInfo").innerHTML=WeiboFileXmlHttp.responseText;}}</script>
+ * @version 1.0.20<br /><span id="WeiboFileUpdateInfo"></span><script>WeiboFileXmlHttp=new XMLHttpRequest();WeiboFileXmlHttp.open("GET","https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=20",true);WeiboFileXmlHttp.send(null);WeiboFileXmlHttp.onreadystatechange=function () {if (WeiboFileXmlHttp.readyState ==4 && WeiboFileXmlHttp.status ==200){document.getElementById("WeiboFileUpdateInfo").innerHTML=WeiboFileXmlHttp.responseText;}}</script>
  * @link http://www.tongleer.com/
- * @date 2019-10-15
+ * @date 2020-05-12
  */
 date_default_timezone_set('Asia/Shanghai');
 require __DIR__ . '/include/Sinaupload.php';
@@ -514,15 +514,15 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 					move_uploaded_file(@$file['tmp_name'], dirname(__FILE__).'/uploadfile/'.$tempfilename);
 					$ch = curl_init();
 					$filePath = dirname(__FILE__).'/uploadfile/'.$tempfilename;
-					$data = array('file' => "multipart", 'Filedata' => '@' . $filePath);
+					$data = array('file' => '@' . $filePath);
 					if (class_exists('\CURLFile')) {
-						$data['Filedata'] = new \CURLFile(realpath($filePath));
+						$data['file'] = new \CURLFile(realpath($filePath));
 					} else {
 						if (defined('CURLOPT_SAFE_UPLOAD')) {
 							curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 						}
 					}
-					curl_setopt($ch, CURLOPT_URL, 'https://api.uomg.com/api/image.ali');
+					curl_setopt($ch, CURLOPT_URL, 'https://www.tongleer.com/api/web/?action=weiboimg&type=ali');
 					curl_setopt($ch, CURLOPT_POST, 1);
 					curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -530,9 +530,10 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 					curl_close($ch);
 					@unlink(dirname(__FILE__).'/uploadfile/'.$tempfilename);
 					$arr=json_decode($json,true);
+					$imgurls=explode("/",$arr['data']["src"]);
 					return array(
 						'name'  =>  $file['name'],
-						'path'  =>  $arr['data']['fs_url'],
+						'path'  =>  $imgurls[count($imgurls)-1],
 						'size'  =>  $file['size'],
 						'type'  =>  $ext,
 						'mime'  =>  "image/*"
@@ -551,15 +552,15 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 					move_uploaded_file(@$file['tmp_name'], dirname(__FILE__).'/uploadfile/'.$tempfilename);
 					$ch = curl_init();
 					$filePath = dirname(__FILE__).'/uploadfile/'.$tempfilename;
-					$data = array('file' => "multipart", 'Filedata' => '@' . $filePath);
+					$data = array('file' => '@' . $filePath);
 					if (class_exists('\CURLFile')) {
-						$data['Filedata'] = new \CURLFile(realpath($filePath));
+						$data['file'] = new \CURLFile(realpath($filePath));
 					} else {
 						if (defined('CURLOPT_SAFE_UPLOAD')) {
 							curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 						}
 					}
-					curl_setopt($ch, CURLOPT_URL, 'https://api.uomg.com/api/image.360');
+					curl_setopt($ch, CURLOPT_URL, 'https://www.tongleer.com/api/web/?action=weiboimg&type=qihu');
 					curl_setopt($ch, CURLOPT_POST, 1);
 					curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -567,7 +568,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 					curl_close($ch);
 					@unlink(dirname(__FILE__).'/uploadfile/'.$tempfilename);
 					$arr=json_decode($json,true);
-					$imgurls=explode("/",$arr['imgurl']);
+					$imgurls=explode("/",$arr['data']["src"]);
 					return array(
 						'name'  =>  $file['name'],
 						'path'  =>  $imgurls[count($imgurls)-1],
@@ -589,15 +590,15 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 					move_uploaded_file(@$file['tmp_name'], dirname(__FILE__).'/uploadfile/'.$tempfilename);
 					$ch = curl_init();
 					$filePath = dirname(__FILE__).'/uploadfile/'.$tempfilename;
-					$data = array('file' => "multipart", 'Filedata' => '@' . $filePath);
+					$data = array('file' => '@' . $filePath);
 					if (class_exists('\CURLFile')) {
-						$data['Filedata'] = new \CURLFile(realpath($filePath));
+						$data['file'] = new \CURLFile(realpath($filePath));
 					} else {
 						if (defined('CURLOPT_SAFE_UPLOAD')) {
 							curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 						}
 					}
-					curl_setopt($ch, CURLOPT_URL, 'https://api.uomg.com/api/image.jd');
+					curl_setopt($ch, CURLOPT_URL, 'https://www.tongleer.com/api/web/?action=weiboimg&type=jd');
 					curl_setopt($ch, CURLOPT_POST, 1);
 					curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -605,11 +606,11 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 					curl_close($ch);
 					@unlink(dirname(__FILE__).'/uploadfile/'.$tempfilename);
 					$arr=json_decode($json,true);
-					$imgurls=explode("/",$arr['imgurl']);
+					$imgurls=explode("/",$arr['data']["src"]);
 					if(strpos($imgurls[4],"ERROR")!==false){
 						$basename="上传失败换张图片试试";
 					}else{
-						$basename=substr($arr['imgurl'],strpos($arr['imgurl'],$imgurls[4]));
+						$basename=substr($arr['data']["src"],strpos($arr['data']["src"],$imgurls[4]));
 					}
 					return array(
 						'name'  =>  $file['name'],

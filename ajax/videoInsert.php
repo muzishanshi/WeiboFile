@@ -169,15 +169,15 @@ if($action=='uploadMovie'){
 				move_uploaded_file(@$file['tmp_name'][$i], dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 				$ch = curl_init();
 				$filePath = dirname(__FILE__).'/../uploadfile/'.$tempfilename;
-				$data = array('file' => "multipart", 'Filedata' => '@' . $filePath);
+				$data = array('file' => '@' . $filePath);
 				if (class_exists('\CURLFile')) {
-					$data['Filedata'] = new \CURLFile(realpath($filePath));
+					$data['file'] = new \CURLFile(realpath($filePath));
 				} else {
 					if (defined('CURLOPT_SAFE_UPLOAD')) {
 						curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 					}
 				}
-				curl_setopt($ch, CURLOPT_URL, 'https://api.uomg.com/api/image.ali');
+				curl_setopt($ch, CURLOPT_URL, 'https://www.tongleer.com/api/web/?action=weiboimg&type=ali');
 				curl_setopt($ch, CURLOPT_POST, 1);
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -185,10 +185,9 @@ if($action=='uploadMovie'){
 				curl_close($ch);
 				@unlink(dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 				$arr=json_decode($json,true);
-				$picname=$arr['data']['fs_url'];
-				$url=$option->aliprefix . $picname;
-				
-				if(isset($picname)){
+				if(isset($arr['data']["src"])){
+					$imgurls=explode("/",$arr['data']["src"]);
+					$url=$option->aliprefix.$imgurls[count($imgurls)-1];
 					$text=array(
 						'name'  =>  $name,
 						'path'  =>  $url,
@@ -223,15 +222,15 @@ if($action=='uploadMovie'){
 				move_uploaded_file(@$file['tmp_name'][$i], dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 				$ch = curl_init();
 				$filePath = dirname(__FILE__).'/../uploadfile/'.$tempfilename;
-				$data = array('file' => "multipart", 'Filedata' => '@' . $filePath);
+				$data = array('file' => '@' . $filePath);
 				if (class_exists('\CURLFile')) {
-					$data['Filedata'] = new \CURLFile(realpath($filePath));
+					$data['file'] = new \CURLFile(realpath($filePath));
 				} else {
 					if (defined('CURLOPT_SAFE_UPLOAD')) {
 						curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 					}
 				}
-				curl_setopt($ch, CURLOPT_URL, 'https://api.uomg.com/api/image.360');
+				curl_setopt($ch, CURLOPT_URL, 'https://www.tongleer.com/api/web/?action=weiboimg&type=qihu');
 				curl_setopt($ch, CURLOPT_POST, 1);
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -239,8 +238,8 @@ if($action=='uploadMovie'){
 				curl_close($ch);
 				@unlink(dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 				$arr=json_decode($json,true);
-				if(isset($arr['imgurl'])){
-					$imgurls=explode("/",$arr['imgurl']);
+				if(isset($arr['data']["src"])){
+					$imgurls=explode("/",$arr['data']["src"]);
 					$url=$option->qihuprefix.$imgurls[count($imgurls)-1];
 					$text=array(
 						'name'  =>  $name,
@@ -276,15 +275,15 @@ if($action=='uploadMovie'){
 				move_uploaded_file(@$file['tmp_name'][$i], dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 				$ch = curl_init();
 				$filePath = dirname(__FILE__).'/../uploadfile/'.$tempfilename;
-				$data = array('file' => "multipart", 'Filedata' => '@' . $filePath);
+				$data = array('file' => '@' . $filePath);
 				if (class_exists('\CURLFile')) {
-					$data['Filedata'] = new \CURLFile(realpath($filePath));
+					$data['file'] = new \CURLFile(realpath($filePath));
 				} else {
 					if (defined('CURLOPT_SAFE_UPLOAD')) {
 						curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 					}
 				}
-				curl_setopt($ch, CURLOPT_URL, 'https://api.uomg.com/api/image.jd');
+				curl_setopt($ch, CURLOPT_URL, 'https://www.tongleer.com/api/web/?action=weiboimg&type=jd');
 				curl_setopt($ch, CURLOPT_POST, 1);
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -292,12 +291,12 @@ if($action=='uploadMovie'){
 				curl_close($ch);
 				@unlink(dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 				$arr=json_decode($json,true);
-				if(isset($arr['imgurl'])){
-					$imgurls=explode("/",$arr['imgurl']);
+				if(isset($arr['data']["src"])){
+					$imgurls=explode("/",$arr['data']["src"]);
 					if(strpos($imgurls[4],"ERROR")!==false){
 						$url="上传失败换张图片试试";
 					}else{
-						$url=$option->jdprefix.substr($arr['imgurl'],strpos($arr['imgurl'],$imgurls[4]));
+						$url=$option->jdprefix.substr($arr['data']["src"],strpos($arr['data']["src"],$imgurls[4]));
 					}
 					$text=array(
 						'name'  =>  $name,

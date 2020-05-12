@@ -70,15 +70,15 @@ if($action=='imageUpload'){
 			move_uploaded_file(@$_FILES["webimgupload"]['tmp_name'][0], dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 			$ch = curl_init();
 			$filePath = dirname(__FILE__).'/../uploadfile/'.$tempfilename;
-			$data = array('file' => "multipart", 'Filedata' => '@' . $filePath);
+			$data = array('file' => '@' . $filePath);
 			if (class_exists('\CURLFile')) {
-				$data['Filedata'] = new \CURLFile(realpath($filePath));
+				$data['file'] = new \CURLFile(realpath($filePath));
 			} else {
 				if (defined('CURLOPT_SAFE_UPLOAD')) {
 					curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 				}
 			}
-			curl_setopt($ch, CURLOPT_URL, 'https://api.uomg.com/api/image.ali');
+			curl_setopt($ch, CURLOPT_URL, 'https://www.tongleer.com/api/web/?action=weiboimg&type=ali');
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -86,8 +86,8 @@ if($action=='imageUpload'){
 			curl_close($ch);
 			@unlink(dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 			$arr=json_decode($json,true);
-			$picname=$arr['data']['fs_url'];
-			$urls=$option->aliprefix . $picname;
+			$imgurls=explode("/",$arr['data']["src"]);
+			$urls=$option->aliprefix.$imgurls[count($imgurls)-1];
 			$hrefs="<a style='text-decoration:none;' href='".$urls."' target='_blank' title='".$_FILES['webimgupload']['name'][0]."'>".$urls."</a>";
 			$codes="<a href='".$urls."' target='_blank' title='".$_FILES['webimgupload']['name'][0]."'><img src='".$urls."' alt='".$_FILES['webimgupload']['name'][0]."' /></a>";
 			$json=json_encode(array("status"=>"ok","msg"=>"上传结果","urls"=>$urls,"hrefs"=>$hrefs,"codes"=>$codes));
@@ -99,15 +99,15 @@ if($action=='imageUpload'){
 			move_uploaded_file(@$_FILES["webimgupload"]['tmp_name'][0], dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 			$ch = curl_init();
 			$filePath = dirname(__FILE__).'/../uploadfile/'.$tempfilename;
-			$data = array('file' => "multipart", 'Filedata' => '@' . $filePath);
+			$data = array('file' => '@' . $filePath);
 			if (class_exists('\CURLFile')) {
-				$data['Filedata'] = new \CURLFile(realpath($filePath));
+				$data['file'] = new \CURLFile(realpath($filePath));
 			} else {
 				if (defined('CURLOPT_SAFE_UPLOAD')) {
 					curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 				}
 			}
-			curl_setopt($ch, CURLOPT_URL, 'https://api.uomg.com/api/image.360');
+			curl_setopt($ch, CURLOPT_URL, 'https://www.tongleer.com/api/web/?action=weiboimg&type=qihu');
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -115,7 +115,7 @@ if($action=='imageUpload'){
 			curl_close($ch);
 			@unlink(dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 			$arr=json_decode($json,true);
-			$imgurls=explode("/",$arr['imgurl']);
+			$imgurls=explode("/",$arr['data']["src"]);
 			$urls=$option->qihuprefix.$imgurls[count($imgurls)-1];
 			$hrefs="<a style='text-decoration:none;' href='".$urls."' target='_blank' title='".$_FILES['webimgupload']['name'][0]."'>".$urls."</a>";
 			$codes="<a href='".$urls."' target='_blank' title='".$_FILES['webimgupload']['name'][0]."'><img src='".$urls."' alt='".$_FILES['webimgupload']['name'][0]."' /></a>";
@@ -128,15 +128,15 @@ if($action=='imageUpload'){
 			move_uploaded_file(@$_FILES["webimgupload"]['tmp_name'][0], dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 			$ch = curl_init();
 			$filePath = dirname(__FILE__).'/../uploadfile/'.$tempfilename;
-			$data = array('file' => "multipart", 'Filedata' => '@' . $filePath);
+			$data = array('file' => '@' . $filePath);
 			if (class_exists('\CURLFile')) {
-				$data['Filedata'] = new \CURLFile(realpath($filePath));
+				$data['file'] = new \CURLFile(realpath($filePath));
 			} else {
 				if (defined('CURLOPT_SAFE_UPLOAD')) {
 					curl_setopt($ch, CURLOPT_SAFE_UPLOAD, FALSE);
 				}
 			}
-			curl_setopt($ch, CURLOPT_URL, 'https://api.uomg.com/api/image.jd');
+			curl_setopt($ch, CURLOPT_URL, 'https://www.tongleer.com/api/web/?action=weiboimg&type=jd');
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -144,11 +144,11 @@ if($action=='imageUpload'){
 			curl_close($ch);
 			@unlink(dirname(__FILE__).'/../uploadfile/'.$tempfilename);
 			$arr=json_decode($json,true);
-			$imgurls=explode("/",$arr['imgurl']);
+			$imgurls=explode("/",$arr['data']["src"]);
 			if(strpos($imgurls[4],"ERROR")!==false){
 				$urls="上传失败换张图片试试";
 			}else{
-				$urls=$option->jdprefix.substr($arr['imgurl'],strpos($arr['imgurl'],$imgurls[4]));
+				$urls=$option->jdprefix.substr($arr['data']["src"],strpos($arr['data']["src"],$imgurls[4]));
 			}
 			$hrefs="<a style='text-decoration:none;' href='".$urls."' target='_blank' title='".$_FILES['webimgupload']['name'][0]."'>".$urls."</a>";
 			$codes="<a href='".$urls."' target='_blank' title='".$_FILES['webimgupload']['name'][0]."'><img src='".$urls."' alt='".$_FILES['webimgupload']['name'][0]."' /></a>";

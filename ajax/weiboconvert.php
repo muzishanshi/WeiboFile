@@ -266,7 +266,7 @@ if($action=='updateALTCLinks'){
 		}
 	}
 	
-	preg_match_all( "/\[\d\]:\s(?!".$siteUrl.")((.*?)((.gif)|(.jpg)|(.bmp)|(.png)|(.GIF)|(.JPG)|(.PNG)|(.BMP)))\n?/", $post_content, $localmatches );
+	preg_match_all( "/\[\d\]:\s*(?!".$siteUrl.")((.*?)((.gif)|(.jpg)|(.bmp)|(.png)|(.GIF)|(.JPG)|(.PNG)|(.BMP)))\n?/", $post_content, $localmatches );
 	if(isset($localmatches[1])){
 		foreach($localmatches[1] as $url){
 			$basename=basename($url);
