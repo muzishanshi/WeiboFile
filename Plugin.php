@@ -1,6 +1,6 @@
 <?php
 /**
- * WeiboFile插件源于新浪图床(已使用微博官方api实现)，而后扩展了阿里图床、京东图床、360图床、新浪同步等功能，因技术有限，若存在bug欢迎邮件反馈，方能逐步升级。<div class="WeiboFileSet"><br /><a href="javascript:;" title="插件因兴趣于闲暇时间所写，故会有代码不规范、不专业和bug的情况，但完美主义促使代码还说得过去，如有bug或使用问题进行反馈即可。">鼠标轻触查看备注</a>&nbsp;<a href="http://club.tongleer.com" target="_blank">论坛</a>&nbsp;<a href="https://www.tongleer.com/api/web/pay.png" target="_blank">打赏</a>&nbsp;<a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=diamond0422@qq.com" target="_blank">反馈</a></div><style>.WeiboFileSet a{background: #4DABFF;padding: 5px;color: #fff;}</style>
+ * WeiboFile插件源于新浪图床(已使用微博官方api实现)，而后扩展了阿里图床、京东图床、360图床、新浪同步等功能，因技术有限，若存在bug欢迎邮件反馈，方能逐步升级，不过此插件只推荐使用微博官方API进行上传微博图床，其他图床能用就用，不能就不用，若想用其他图床，则请前往https://image.kieng.cn/或https://pic.onji.cn/进行上传。<div class="WeiboFileSet"><br /><a href="javascript:;" title="插件因兴趣于闲暇时间所写，故会有代码不规范、不专业和bug的情况，但完美主义促使代码还说得过去，如有bug或使用问题进行反馈即可。">鼠标轻触查看备注</a>&nbsp;<a href="http://club.tongleer.com" target="_blank">论坛</a>&nbsp;<a href="https://www.tongleer.com/api/web/pay.png" target="_blank">打赏</a>&nbsp;<a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=diamond0422@qq.com" target="_blank">反馈</a></div><style>.WeiboFileSet a{background: #4DABFF;padding: 5px;color: #fff;}</style>
  * @package WeiboFile For Typecho
  * @author 二呆
  * @version 1.0.20<br /><span id="WeiboFileUpdateInfo"></span><script>WeiboFileXmlHttp=new XMLHttpRequest();WeiboFileXmlHttp.open("GET","https://www.tongleer.com/api/interface/WeiboFile.php?action=update&version=20",true);WeiboFileXmlHttp.send(null);WeiboFileXmlHttp.onreadystatechange=function () {if (WeiboFileXmlHttp.readyState ==4 && WeiboFileXmlHttp.status ==200){document.getElementById("WeiboFileUpdateInfo").innerHTML=WeiboFileXmlHttp.responseText;}}</script>
@@ -233,7 +233,7 @@ class WeiboFile_Plugin implements Typecho_Plugin_Interface{
 		$weibouser = new Typecho_Widget_Helper_Form_Element_Text('weibouser', null, '', _t('微博用户名(非新注册、非二维码登陆，且使用过一段时间的账号)'), _t('<font color="red">因微博官方原因，此处已废弃，可无需填写，在上方登陆个人微博账号后再进行操作。</font>备注：设置后可多尝试多上传几次，上传成功尽量不要将此微博小号登录微博系的网站、软件，可以登录，但不确定会不会上传失败，上传失败了再重新上传2次同样可以正常上传，如果小号等级过低，可尝试微博大号，微博账号不能有手机验证权限，插件可正常使用，无需担心。'));
         $form->addInput($weibouser);
 
-        $weibopass = new Typecho_Widget_Helper_Form_Element_Password('weibopass', null, '', _t('微博密码'),'<font color="red">因微博官方原因，此处已废弃，可无需填写，在上方登陆个人微博账号后再进行操作。</font>');
+        $weibopass = new Typecho_Widget_Helper_Form_Element_Password('weibopass', null, '', _t('微博密码'),'<font color="red">因微博官方原因，此处已废弃，可无需填写，在最上方登陆个人微博账号后再进行操作。</font>');
         $form->addInput($weibopass);
 		//视频列表
 		try{

@@ -1,4 +1,4 @@
-<img src="https://ws3.sinaimg.cn/large/ecabade5ly1fqwuz2k658j20le05nt8i" alt="Typecho-WeiboFile阿里新浪微博图片上传插件" />
+<img src="https://wx3.sinaimg.cn/large/ecabade5ly1fqwuz2k658j20le05nt8i" alt="Typecho-WeiboFile阿里新浪微博图片上传插件" />
 
 ### WeiboFileForTypecho阿里图床、新浪微博图床、微博同步、优酷视频上传三合一一体插件
 
@@ -18,7 +18,7 @@
 
 程序有可能会遇到bug不改版本号直接修改代码的时候，所以扫描以下二维码关注公众号“同乐儿”，可直接与作者二呆产生联系，不再为bug烦恼，随时随地解决问题。
 
-<img src="http://me.tongleer.com/content/uploadfile/201706/008b1497454448.png">
+<img src="https://me.tongleer.com/content/uploadfile/201706/008b1497454448.png">
 
 #### 使用方法：
 
@@ -34,7 +34,7 @@
 #### 与我联系：
 
 	作者：二呆
-	网站：http://www.tongleer.com/
+	网站：https://www.tongleer.com/
 	Github：https://github.com/muzishanshi/WeiboFile
 
 #### 更新记录：
